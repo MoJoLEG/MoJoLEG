@@ -35,7 +35,9 @@
 				E383D6652E58D3B7000CBCD5 /* MoJoLEG */,
 				E383D6642E58D3B7000CBCD5 /* Products */,
 			);
+			indentWidth = 4;
 			sourceTree = "<group>";
+			tabWidth = 4;
 		};
 		E383D6642E58D3B7000CBCD5 /* Products */ = {
 			isa = PBXGroup;
