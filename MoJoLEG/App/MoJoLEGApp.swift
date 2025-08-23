@@ -10,13 +10,13 @@ import SwiftUI
 
 @main
 struct MoJoLEGApp: App {
-    var body: some Scene {
-        WindowGroup {
-            DevView()
-        }
-        .modelContainer(
-            for: [SceneBreakdown.self, CharacterItem.self, PropItem.self],
-            inMemory: true
-        )
+  var body: some Scene {
+    WindowGroup {
+      DevView()
     }
+    .modelContainer(
+      for: [Scenario.self, Prop.self],
+      inMemory: true
+    )
+  }
 }

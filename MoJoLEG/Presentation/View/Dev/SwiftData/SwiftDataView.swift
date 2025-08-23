@@ -9,43 +9,44 @@ import SwiftData
 import SwiftUI
 
 struct SwiftDataView: View {
-    @Environment(\.modelContext) private var context
+  @Environment(\.modelContext) private var context
 
-    @Query(sort: \SceneBreakdown.sceneNumber, order: .forward)
-    private var scenes: [SceneBreakdown]
+  @Query(sort: \Scenario.updatedAt, order: .forward)
+  private var scenarios: [Scenario]
 
-    var body: some View {
-        List {
-            Button("Add") {
-                let scene = SceneBreakdown(
-                    sceneNumber: "\(Int.random(in: 1..<10))",
-                    ioType: "실내",
-                    timeOfDay: "D",
-                    sceneSummary: "레몬이 커피를 마신다."
-                )
+  var body: some View {
+    List {
+      Button("Add") {
+        let scenario = Scenario(
+          id: UUID(),
+          scenes: [],
+          props: [],
+          createdAt: Date(),
+          updatedAt: Date()
+        )
 
-                context.insert(scene)
-                
-                try? context.save()
+        context.insert(scenario)
+
+        try? context.save()
+      }
+      ForEach(scenarios) { scenario in
+        Text(String(describing: scenario))
+          .swipeActions {
+            Button("Delete", role: .destructive) {
+              context.delete(scenario)
+
+              try? context.save()
             }
-            ForEach(scenes) { scene in
-                Text(String(describing: scene))
-                    .swipeActions {
-                        Button("Delete", role: .destructive) {
-                            context.delete(scene)
-                            
-                            try? context.save()
-                        }
-                    }
-            }
-        }
+          }
+      }
     }
+  }
 }
 
 #Preview {
-    SwiftDataView()
-        .modelContainer(
-            for: [SceneBreakdown.self, CharacterItem.self, PropItem.self],
-            inMemory: false
-        )
+  SwiftDataView()
+    .modelContainer(
+      for: [Scenario.self, Prop.self],
+      inMemory: false
+    )
 }
