@@ -54,7 +54,7 @@ struct SeperateSceneView: View {
                 ) { result in
                     switch result {
                     case .success(let url):
-                        extractTask = Task {
+                        Task {
                             guard url.startAccessingSecurityScopedResource()
                             else {
                                 return

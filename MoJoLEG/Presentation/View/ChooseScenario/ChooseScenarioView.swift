@@ -19,41 +19,80 @@ struct ChooseScenarioView: View {
     @State private var isSearchBarPresented: Bool = false
 
   @Environment(\.editMode) private var editMode
+    
+    @StateObject private var navigationManager = NavigationManager()
 
   @Namespace private var namespace
 
+  @State private var processedSceneTexts: [String] = []
+
   var body: some View {
-    ZStack {
-      background
+      NavigationStack(path: $navigationManager.path){
+          ZStack {
+              background
+              
+              VStack {
+                  navigationTitle
+                  
+                  topToolbar
+                  
+                  scenarioList
+                  
+              }
+              .padding(40)
+          }
+          .navigationDestination(for: ViewType.self) { value in
+              switch value {
+              case .Loading:
+                  LoadingView()
+                      .environmentObject(navigationManager)
+              case .PropList:
+                  PropListView(scenario: .sample)
+              }
+          }
+          .toolbar {
+              bottomToolbar
+          }
+          .fileImporter(isPresented: $isFileOpen,
+                        allowedContentTypes: [.pdf])
+          { result in
+              switch result {
+              case .success(let url):
+                  Task {
+                      guard url.startAccessingSecurityScopedResource() else { return }
+                      defer { url.stopAccessingSecurityScopedResource() }
 
-      VStack {
-        navigationTitle
+                      // 1. Extract text from PDF
+                      let extracted = ExtractTextService.shared.extractText(from: url, fileType: .pdf)
 
-        topToolbar
+                      // 2. Separate scenes from extracted text
+                      if let extracted, !extracted.isEmpty {
+                          let separated = SeperateSceneService.shared.separteScenes(scenario: extracted)
 
-        scenarioList
-
-            }
-            .padding(40)
-        }
-        .toolbar {
-            bottomToolbar
-        }
-        .fileImporter(isPresented: $isFileOpen,
-                      allowedContentTypes: [.pdf])
-        { result in
-            switch result {
-            case .success(let file):
-                guard let url = URL(string: file.absoluteString) else {
-                    print("there's no file")
-                    return
-                }
-                print(url)
-                
-            case .failure(let error):
-                print(error.localizedDescription)
-            }
-        }
+                          // 3. Upstage에 씬들을 순차적으로 보냄
+                          if let separated, !separated.isEmpty {
+                              await MainActor.run {
+                                  navigationManager.navigate(to: .Loading)
+                              }
+                              let responses = await UpstageService.shared.processScenesInOrder(separated)
+                              let contents = responses.map { $0.choices.first?.message.content ?? "" }
+                              await MainActor.run {
+                                  self.processedSceneTexts = contents
+                                  navigationManager.navigate(to: .PropList)
+                              }
+                          } else {
+                              print("Scene separation failed or no scenes")
+                          }
+                      } else {
+                          print("PDF extraction failed")
+                      }
+                  }
+                  
+              case .failure(let error):
+                  print(error.localizedDescription)
+              }
+          }
+      }
     }
 
   private var background: some View {
