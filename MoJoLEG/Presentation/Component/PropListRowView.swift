@@ -12,13 +12,18 @@ struct PropListRowView: View {
   
   var body: some View {
     HStack(spacing: 24) {
-      Image(systemName: prop.isCompleted ? "checkmark.circle.fill" : "circle")
-        .foregroundStyle(prop.isCompleted ? .primaryYellow : .gray900)
-        .frame(minWidth: 16)
+      Button {
+        prop.isCompleted.toggle()
+      } label: {
+        Image(systemName: prop.isCompleted ? "checkmark.circle.fill" : "circle")
+          .foregroundStyle(prop.isCompleted ? .primaryYellow : .gray900)
+          .frame(minWidth: 16)
+      }
       Text("\(prop.sceneNumber)")
         .frame(minWidth: 24)
       Text("\(prop.category.toString)")
         .frame(minWidth: 54)
+        .background(prop.category.toHighlight)
       Text("\(prop.name)")
         .frame(minWidth: 80)
       Text("\(prop.location)")

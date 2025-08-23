@@ -5,6 +5,8 @@
 //  Created by 정희균 on 8/23/25.
 //
 
+import SwiftUI
+
 enum PropCategory: Codable {
   case major
   case minor
@@ -20,6 +22,19 @@ extension PropCategory {
       "소도구"
     case .uncategorized:
       "미분류"
+    }
+  }
+}
+
+extension PropCategory {
+  var toHighlight: Color {
+    switch self {
+    case .major:
+      Color.highlightYellow
+    case .minor:
+      Color.highlightMint
+    case .uncategorized:
+      Color.highlightPink
     }
   }
 }

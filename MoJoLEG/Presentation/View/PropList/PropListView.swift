@@ -14,10 +14,17 @@ struct PropListView: View {
   }
 
   let scenario: Scenario
+  
+  private var filteredProps: [Prop] {
+    scenario.props
+      .filter { !isSearchBarPresented || searchText.isEmpty || $0.name.contains(searchText) }
+      .sorted(by: { $0.sceneNumber < $1.sceneNumber })
+  }
 
   @State private var isScenarioPresented: Bool = false
   @State private var isSidebarPresented: Bool = false
   @State private var isSearchBarPresented: Bool = false
+  @State private var searchText: String = ""
   @State private var selectedLayout: PropLayout = .list
 
   @Namespace private var namespace
@@ -137,9 +144,13 @@ struct PropListView: View {
     HStack {
       Image(systemName: "magnifyingglass")
         .foregroundStyle(.gray400)
-      TextField("검색", text: .constant(""))
-      Image(systemName: "xmark.circle.fill")
-        .foregroundStyle(.gray400)
+      TextField("검색", text: $searchText)
+      Button {
+        searchText = ""
+      } label: {
+        Image(systemName: "xmark.circle.fill")
+          .foregroundStyle(.gray400)
+      }
     }
     .padding(7)
     .frame(maxWidth: 300)
@@ -164,7 +175,7 @@ struct PropListView: View {
     ScrollView([.horizontal, .vertical]) {
       LazyVStack(pinnedViews: .sectionHeaders) {
         Section {
-          ForEach(scenario.props) { prop in
+          ForEach(filteredProps) { prop in
             PropListRowView(prop: prop)
           }
         } header: {
@@ -257,5 +268,14 @@ struct PropListView: View {
 }
 
 #Preview {
-  PropListView(scenario: .sample)
+  let scenario = Scenario.sample
+  
+  scenario.props = [
+    Prop(id: UUID(), isCompleted: false, sceneNumber: 2, category: .major, name: "기타", location: "집안", environment: .interior, character: "레몬", note: "기타"),
+    Prop(id: UUID(), isCompleted: true, sceneNumber: 1, category: .minor, name: "사과", location: "집안", environment: .interior, character: "모니카", note: "기타"),
+    Prop(id: UUID(), isCompleted: false, sceneNumber: 4, category: .major, name: "사과", location: "집밖", environment: .interior, character: "조이드", note: "기타"),
+    Prop(id: UUID(), isCompleted: false, sceneNumber: 3, category: .uncategorized, name: "사과", location: "집밖", environment: .interior, character: "그린", note: "기타"),
+  ]
+  
+  return PropListView(scenario: scenario)
 }
