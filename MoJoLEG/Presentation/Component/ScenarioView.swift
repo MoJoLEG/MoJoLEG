@@ -9,26 +9,36 @@ import SwiftUI
 
 struct ScenarioView: View {
   let scenes: [ScenarioScene]
+  @Binding var selectedScene: ScenarioScene?
 
   var body: some View {
-    ScrollView {
-      LazyVStack(alignment: .leading) {
-        ForEach(scenes, id: \.self) { scene in
-          Text(scene.content)
-            .foregroundStyle(.gray900)
+    ScrollViewReader { proxy in
+      ScrollView {
+        LazyVStack(alignment: .leading) {
+          ForEach(scenes, id: \.self) { scene in
+            Text(scene.content)
+              .id(scene.id)
+              .foregroundStyle(.gray900)
+          }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+      }
+      .defaultScrollAnchor(.top)
+      .padding(32)
+      .background {
+        RoundedRectangle(cornerRadius: 24)
+          .fill(.white)
+          .shadow(color: .black.opacity(0.25), radius: 20, x: 4, y: 4)
+      }
+      .onChange(of: selectedScene) { oldValue, newValue in
+        if let newValue {
+          proxy.scrollTo(newValue.id)
         }
       }
-      .frame(maxWidth: .infinity, alignment: .leading)
-    }
-    .padding(32)
-    .background {
-      RoundedRectangle(cornerRadius: 24)
-        .fill(.white)
-        .shadow(color: .black.opacity(0.25), radius: 20, x: 4, y: 4)
     }
   }
 }
 
 #Preview {
-  ScenarioView(scenes: [])
+  ScenarioView(scenes: [], selectedScene: .constant(nil))
 }

@@ -15,7 +15,7 @@ struct MoJoLEGApp: App {
       ChooseScenarioView()
     }
     .modelContainer(
-      for: [Scenario.self, Prop.self],
+      for: [Scenario.self, Prop.self, ScenarioScene.self],
       inMemory: false
     )
   }

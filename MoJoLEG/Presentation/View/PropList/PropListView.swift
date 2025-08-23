@@ -14,10 +14,13 @@ struct PropListView: View {
   }
 
   let scenario: Scenario
-  
+
   private var filteredProps: [Prop] {
     scenario.props
-      .filter { !isSearchBarPresented || searchText.isEmpty || $0.name.contains(searchText) }
+      .filter {
+        !isSearchBarPresented || searchText.isEmpty
+          || $0.name.contains(searchText)
+      }
       .sorted(by: { $0.sceneNumber < $1.sceneNumber })
   }
 
@@ -26,7 +29,7 @@ struct PropListView: View {
   @State private var isSearchBarPresented: Bool = false
   @State private var searchText: String = ""
   @State private var selectedLayout: PropLayout = .list
-  @State private var selectedScene: String = ""
+  @State private var selectedScene: ScenarioScene? = nil
 
   @Namespace private var namespace
 
@@ -194,19 +197,20 @@ struct PropListView: View {
       }
       .defaultScrollAnchor(.topLeading)
       .onChange(of: selectedScene) { oldValue, newValue in
-        scrollToScene(newValue, using: proxy)
-        isSidebarPresented = false
+        if let newValue {
+          scrollToScene(newValue, using: proxy)
+          isSidebarPresented = false
+        }
       }
     }
   }
-  
-  private func scrollToScene(_ scene: String, using proxy: ScrollViewProxy) {
+
+  private func scrollToScene(
+    _ scene: ScenarioScene,
+    using proxy: ScrollViewProxy
+  ) {
     // Extract a numeric scene index from strings like "S#12" if needed
-    let targetNumber: Int? = {
-      if let n = Int(scene) { return n }
-      let digits = scene.filter { $0.isNumber }
-      return Int(digits)
-    }()
+    let targetNumber: Int? = scene.sceneNumber
 
     guard let number = targetNumber else { return }
 
@@ -257,7 +261,7 @@ struct PropListView: View {
       Spacer()
 
       if isScenarioPresented {
-        ScenarioView(scenes: scenario.scenes)
+        ScenarioView(scenes: scenario.scenes, selectedScene: $selectedScene)
           .frame(maxWidth: 540)
           .transition(.move(edge: .trailing).combined(with: .opacity))
       }
@@ -280,7 +284,49 @@ struct PropListView: View {
 
       HStack {
         if isSidebarPresented {
-          SideTabView(tabs: scenario.scenes.map { $0.title }, selectedTab: $selectedScene)
+          VStack(alignment: .leading) {
+            HStack {
+              Image(.logo)
+                .resizable()
+                .scaledToFit()
+                .frame(maxWidth: 72)
+
+              Spacer()
+            }
+            .padding(.horizontal, 16)
+            .padding(.top)
+            
+            Text(scenario.title)
+              .font(.title3)
+              .bold()
+              .padding(.horizontal, 16)
+            
+            ScrollView {
+              LazyVStack(alignment: .leading) {
+                ForEach(
+                  scenario.scenes.sorted(by: { $0.sceneNumber ?? 0 < $1.sceneNumber ?? 0 })
+                ) { scene in
+                  Text(scene.title)
+                    .foregroundStyle(
+                      scene == selectedScene ? .primaryYellow : .gray900
+                    )
+                    .padding(16)
+                    .onTapGesture {
+                      withAnimation {
+                        selectedScene = scene
+                      }
+                    }
+                }
+              }
+              .frame(maxWidth: .infinity)
+            }
+          }
+          .padding(16)
+          .background {
+            RoundedRectangle(cornerRadius: 24)
+              .fill(.white)
+              .shadow(color: .black.opacity(0.25), radius: 4, x: 4, y: 4)
+          }
           .frame(maxWidth: 360)
           .transition(.move(edge: .leading).combined(with: .opacity))
         }
@@ -296,10 +342,10 @@ struct PropListView: View {
 
 #Preview {
   let scenario = Scenario.sample
-  
+
   scenario.props = [
     .sample
   ]
-  
+
   return PropListView(scenario: scenario)
 }
