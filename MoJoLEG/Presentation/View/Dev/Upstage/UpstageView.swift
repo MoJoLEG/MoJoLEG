@@ -33,6 +33,7 @@ struct UpstageView: View {
                 TextField("Prompt", text: $prompt)
                 Button("Request") {
                     requestTask = Task {
+                        let currentPrompt = prompt
                         prompt = ""
                         defer {
                             Task { @MainActor in
@@ -43,7 +44,7 @@ struct UpstageView: View {
                         let requestDto = UpstageRequestDto(messages: [
                             UpstageMessageRequestDto(
                                 role: "user",
-                                content: prompt
+                                content: currentPrompt
                             )
                         ])
                         do {
