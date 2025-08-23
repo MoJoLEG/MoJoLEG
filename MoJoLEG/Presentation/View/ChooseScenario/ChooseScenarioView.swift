@@ -168,7 +168,9 @@ struct ChooseScenarioView: View {
       scenario.title = "\(scenario.title) - 복사"
       context.insert(copy)
     }
-    do { try context.save() } catch { print("Duplicate save error:", error.localizedDescription) }
+    do { try context.save() } catch {
+      print("Duplicate save error:", error.localizedDescription)
+    }
     selectedScenarios.removeAll()
   }
 
@@ -176,7 +178,9 @@ struct ChooseScenarioView: View {
     let targets = scenarios.filter { selectedScenarios.contains($0.id) }
     guard !targets.isEmpty else { return }
     for t in targets { context.delete(t) }
-    do { try context.save() } catch { print("Delete save error:", error.localizedDescription) }
+    do { try context.save() } catch {
+      print("Delete save error:", error.localizedDescription)
+    }
     selectedScenarios.removeAll()
   }
 
@@ -302,7 +306,10 @@ struct ChooseScenarioView: View {
           ZStack(alignment: .center) {
             ScenarioButton(
               title: scenario.title,
-              date: scenario.updatedAt.formatted(date: .numeric, time: .omitted),
+              date: scenario.updatedAt.formatted(
+                date: .numeric,
+                time: .omitted
+              ),
               isFavorite: Binding(
                 get: { scenario.isFavorite },
                 set: { newValue in
@@ -326,8 +333,9 @@ struct ChooseScenarioView: View {
               Circle()
                 .strokeBorder(Color.white, lineWidth: 2)
                 .background(
-                  selectedScenarios.contains(scenario.id) ?
-                    Circle().fill(Color.accentColor) : Circle().fill(Color.clear)
+                  selectedScenarios.contains(scenario.id)
+                    ? Circle().fill(Color.accentColor)
+                    : Circle().fill(Color.clear)
                 )
                 .frame(width: 25, height: 25)
                 .overlay(
@@ -362,43 +370,51 @@ struct ChooseScenarioView: View {
     }
   }
 
-@ToolbarContentBuilder
-private var bottomToolbar: some ToolbarContent {
-  if editMode?.wrappedValue == .active {
-    ToolbarItem(placement: .bottomBar) {
-      HStack {
-        // Left - 공유 (remain TODO for now)
-        Button {
-          // TODO: 공유 액션 (selectedScenarios 사용)
-          print("공유 tapped: \(selectedScenarios.count) selected")
-        } label: {
-            Text("공유")
+  @ToolbarContentBuilder
+  private var bottomToolbar: some ToolbarContent {
+    if editMode?.wrappedValue == .active {
+      ToolbarItem(placement: .bottomBar) {
+        HStack {
+          // Left - 공유
+          ShareLink(
+            items: {
+              let targets = scenarios.filter({
+                selectedScenarios.contains($0.id)
+              })
+              return targets.map({
+                ExcelService.shared.createExcelFile($0)
+              })
+            }()
+          )
+          .labelStyle(.titleOnly)
+          .foregroundStyle(.primaryYellow)
+          .disabled(selectedScenarios.isEmpty)
+
+          Spacer()
+
+          // Center - 복제
+          Button {
+            duplicateSelectedScenarios()
+          } label: {
+            Text("복제")
+              .foregroundStyle(.primaryYellow)
+          }
+          .disabled(selectedScenarios.isEmpty)
+
+          Spacer()
+
+          // Right - 삭제
+          Button(role: .destructive) {
+            deleteSelectedScenarios()
+          } label: {
+            Text("삭제")
+              .foregroundStyle(.primaryYellow)
+          }
+          .disabled(selectedScenarios.isEmpty)
         }
-        .disabled(selectedScenarios.isEmpty)
-
-        Spacer()
-
-        // Center - 복제
-        Button {
-          duplicateSelectedScenarios()
-        } label: {
-          Text("복제")
-        }
-        .disabled(selectedScenarios.isEmpty)
-
-        Spacer()
-
-        // Right - 삭제
-        Button(role: .destructive) {
-          deleteSelectedScenarios()
-        } label: {
-          Text("삭제")
-        }
-        .disabled(selectedScenarios.isEmpty)
       }
     }
   }
-}
 }
 
 #Preview {
