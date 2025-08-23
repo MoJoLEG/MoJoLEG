@@ -1,5 +1,8 @@
-# Created by https://www.toptal.com/developers/gitignore/api/macos,visualstudiocode,xcode,swift
-# Edit at https://www.toptal.com/developers/gitignore?templates=macos,visualstudiocode,xcode,swift
+# Created by https://www.toptal.com/developers/gitignore/api/macos,visualstudiocode,xcode,swift,swiftpackagemanager,dotenv
+# Edit at https://www.toptal.com/developers/gitignore?templates=macos,visualstudiocode,xcode,swift,swiftpackagemanager,dotenv
+
+### dotenv ###
+.env
 
 ### macOS ###
 # General
@@ -118,6 +121,12 @@ fastlane/test_output
 
 iOSInjectionProject/
 
+### SwiftPackageManager ###
+Packages
+xcuserdata
+*.xcodeproj
+
+
 ### VisualStudioCode ###
 .vscode/*
 !.vscode/settings.json
@@ -150,4 +159,4 @@ iOSInjectionProject/
 /*.gcno
 **/xcshareddata/WorkspaceSettings.xcsettings
 
-# End of https://www.toptal.com/developers/gitignore/api/macos,visualstudiocode,xcode,swift
+# End of https://www.toptal.com/developers/gitignore/api/macos,visualstudiocode,xcode,swift,swiftpackagemanager,dotenv
