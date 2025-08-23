@@ -74,8 +74,11 @@ struct ChooseScenarioView: View {
                               await MainActor.run {
                                   navigationManager.navigate(to: .Loading)
                               }
-                              let responses = await UpstageService.shared.processScenesInOrder(separated)
-                              let contents = responses.map { $0.choices.first?.message.content ?? "" }
+                let responses = await UpstageService.shared
+                  .processScenesInParallel(separated)
+                let contents = responses.map {
+                  $0.choices.first?.message.content ?? ""
+                }
                               await MainActor.run {
                                   self.processedSceneTexts = contents
                                   navigationManager.navigate(to: .PropList)

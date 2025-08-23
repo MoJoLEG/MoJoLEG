@@ -61,6 +61,32 @@ final class UpstageService {
         }
         return results
     }
+  
+  @MainActor
+  func processScenesInParallel(_ scenes: [String]) async -> [UpstageResponseDto] {
+    await withTaskGroup { group in
+      for (index, scene) in scenes.enumerated() {
+        group.addTask { () -> UpstageResponseDto? in
+          do {
+            let response = try await self.requestWithPrompt(userText: scene)
+            print("Finish \(index + 1)")
+            return response
+          } catch {
+            print("Failed \(index + 1): \(error.localizedDescription)")
+          }
+          return nil
+        }
+      }
+      
+      var result: [UpstageResponseDto] = []
+      for await response in group {
+        if let response {
+          result.append(response)
+        }
+      }
+      return result
+    }
+  }
 }
 
 enum UpstageRouter: URLRequestConvertible {
