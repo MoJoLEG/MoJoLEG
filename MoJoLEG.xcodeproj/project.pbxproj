@@ -6,14 +6,36 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		E383D7672E58DBD2000CBCD5 /* Alamofire in Frameworks */ = {isa = PBXBuildFile; productRef = E383D7662E58DBD2000CBCD5 /* Alamofire */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXFileReference section */
 		E383D6632E58D3B7000CBCD5 /* MoJoLEG.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MoJoLEG.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		E383D85E2E594B93000CBCD5 /* Exceptions for "MoJoLEG" folder in "MoJoLEG" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = E383D6622E58D3B7000CBCD5 /* MoJoLEG */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		E383D6652E58D3B7000CBCD5 /* MoJoLEG */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				E383D85E2E594B93000CBCD5 /* Exceptions for "MoJoLEG" folder in "MoJoLEG" target */,
+			);
 			path = MoJoLEG;
+			sourceTree = "<group>";
+		};
+		E383D7702E5948EA000CBCD5 /* Config */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = Config;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -23,6 +45,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				E383D7672E58DBD2000CBCD5 /* Alamofire in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -34,6 +57,7 @@
 			children = (
 				E383D6652E58D3B7000CBCD5 /* MoJoLEG */,
 				E383D6642E58D3B7000CBCD5 /* Products */,
+				E383D7702E5948EA000CBCD5 /* Config */,
 			);
 			indentWidth = 4;
 			sourceTree = "<group>";
@@ -64,9 +88,11 @@
 			);
 			fileSystemSynchronizedGroups = (
 				E383D6652E58D3B7000CBCD5 /* MoJoLEG */,
+				E383D7702E5948EA000CBCD5 /* Config */,
 			);
 			name = MoJoLEG;
 			packageProductDependencies = (
+				E383D7662E58DBD2000CBCD5 /* Alamofire */,
 			);
 			productName = MoJoLEG;
 			productReference = E383D6632E58D3B7000CBCD5 /* MoJoLEG.app */;
@@ -96,6 +122,9 @@
 			);
 			mainGroup = E383D65A2E58D3B7000CBCD5;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				E383D7652E58DBD2000CBCD5 /* XCRemoteSwiftPackageReference "Alamofire" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = E383D6642E58D3B7000CBCD5 /* Products */;
 			projectDirPath = "";
@@ -129,6 +158,8 @@
 /* Begin XCBuildConfiguration section */
 		E383D66C2E58D3B8000CBCD5 /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReferenceAnchor = E383D7702E5948EA000CBCD5 /* Config */;
+			baseConfigurationReferenceRelativePath = Config.xcconfig;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
@@ -193,6 +224,8 @@
 		};
 		E383D66D2E58D3B8000CBCD5 /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReferenceAnchor = E383D7702E5948EA000CBCD5 /* Config */;
+			baseConfigurationReferenceRelativePath = Config.xcconfig;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
@@ -250,6 +283,8 @@
 		};
 		E383D66F2E58D3B8000CBCD5 /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReferenceAnchor = E383D7702E5948EA000CBCD5 /* Config */;
+			baseConfigurationReferenceRelativePath = Config.xcconfig;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
@@ -258,6 +293,7 @@
 				DEVELOPMENT_TEAM = Z2GGFMSC7S;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = MoJoLEG/Info.plist;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -287,6 +323,8 @@
 		};
 		E383D6702E58D3B8000CBCD5 /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReferenceAnchor = E383D7702E5948EA000CBCD5 /* Config */;
+			baseConfigurationReferenceRelativePath = Config.xcconfig;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
@@ -295,6 +333,7 @@
 				DEVELOPMENT_TEAM = Z2GGFMSC7S;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = MoJoLEG/Info.plist;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -344,6 +383,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		E383D7652E58DBD2000CBCD5 /* XCRemoteSwiftPackageReference "Alamofire" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/Alamofire/Alamofire.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 5.10.2;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		E383D7662E58DBD2000CBCD5 /* Alamofire */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = E383D7652E58DBD2000CBCD5 /* XCRemoteSwiftPackageReference "Alamofire" */;
+			productName = Alamofire;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = E383D65B2E58D3B7000CBCD5 /* Project object */;
 }
