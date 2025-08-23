@@ -96,7 +96,7 @@ struct PropListView: View {
             .foregroundStyle(.gray900)
             .padding(.horizontal, 10)
         }
-        ShareLink(item: .applicationSupportDirectory)
+        ShareLink(item: ExcelService.shared.createExcelFile(scenario))
           .labelStyle(.iconOnly)
           .foregroundStyle(.primaryYellow)
       }
@@ -295,16 +295,18 @@ struct PropListView: View {
             }
             .padding(.horizontal, 16)
             .padding(.top)
-            
+
             Text(scenario.title)
               .font(.title3)
               .bold()
               .padding(.horizontal, 16)
-            
+
             ScrollView {
               LazyVStack(alignment: .leading) {
                 ForEach(
-                  scenario.scenes.sorted(by: { $0.sceneNumber ?? 0 < $1.sceneNumber ?? 0 })
+                  scenario.scenes.sorted(by: {
+                    $0.sceneNumber ?? 0 < $1.sceneNumber ?? 0
+                  })
                 ) { scene in
                   Text(scene.title)
                     .foregroundStyle(
