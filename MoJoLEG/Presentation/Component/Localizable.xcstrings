@@ -4,6 +4,16 @@
     "%@" : {
 
     },
+    "%@/%@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@/%2$@"
+          }
+        }
+      }
+    },
     "%lf" : {
 
     },
@@ -177,6 +187,7 @@
       }
     },
     "로고" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {

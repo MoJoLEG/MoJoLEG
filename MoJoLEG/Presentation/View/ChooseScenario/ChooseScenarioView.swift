@@ -19,6 +19,7 @@ struct ChooseScenarioView: View {
   @State private var scenarioFilterState: ScenarioFilterState = .all
   @State private var isSearchBarPresented: Bool = false
   @State private var isLoadingViewPresented: Bool = false
+  @State private var selectedScenarios: Set<UUID> = []
 
   @Environment(\.modelContext) private var context
   @Query(sort: \Scenario.updatedAt, order: .forward)
@@ -29,6 +30,15 @@ struct ChooseScenarioView: View {
   @Environment(\.editMode) private var editMode
 
   @Namespace private var namespace
+
+  private var filteredScenarios: [Scenario] {
+    switch scenarioFilterState {
+    case .all:
+      return scenarios
+    case .favorite:
+      return scenarios.filter { $0.isFavorite }
+    }
+  }
 
   var body: some View {
     NavigationStack {
@@ -267,15 +277,49 @@ struct ChooseScenarioView: View {
         addScenarioButton
           .frame(maxWidth: 220, maxHeight: .infinity, alignment: .top)
 
-        ForEach(scenarios) { scenario in
-          ScenarioButton(
-            title: scenario.title,
-            date: scenario.updatedAt.formatted(date: .numeric, time: .omitted),
-            isFavorite: scenario.isFavorite
-          ) {
-            selectedScenario = scenario
+        ForEach(filteredScenarios) { scenario in
+          ZStack(alignment: .center) {
+            ScenarioButton(
+              title: scenario.title,
+              date: scenario.updatedAt.formatted(date: .numeric, time: .omitted),
+              isFavorite: Binding(
+                get: { scenario.isFavorite },
+                set: { newValue in
+                  scenario.isFavorite = newValue
+                  try? context.save()
+                }
+              )
+            ) {
+              if editMode?.wrappedValue == .active {
+                if selectedScenarios.contains(scenario.id) {
+                  selectedScenarios.remove(scenario.id)
+                } else {
+                  selectedScenarios.insert(scenario.id)
+                }
+              } else {
+                selectedScenario = scenario
+              }
+            }
+
+            if editMode?.wrappedValue == .active {
+              Circle()
+                .strokeBorder(Color.white, lineWidth: 2)
+                .background(
+                  selectedScenarios.contains(scenario.id) ?
+                    Circle().fill(Color.accentColor) : Circle().fill(Color.clear)
+                )
+                .frame(width: 25, height: 25)
+                .overlay(
+                  Image(systemName: "checkmark")
+                    .foregroundColor(.white)
+                    .font(.system(size: 12, weight: .bold))
+                    .opacity(selectedScenarios.contains(scenario.id) ? 1 : 0)
+                )
+                .padding(8)
+                .padding(.top, 20)
+            }
           }
-          .frame(maxWidth: 220, maxHeight: .infinity, alignment: .top)
+          .frame(maxWidth: 200, maxHeight: .infinity, alignment: .top)
         }
       }
     }
@@ -293,23 +337,46 @@ struct ChooseScenarioView: View {
           .font(.system(size: 20, weight: .semibold))
           .foregroundStyle(.primaryYellow)
       }
+      .frame(maxWidth: 200, maxHeight: .infinity, alignment: .top)
     }
   }
 
-  @ToolbarContentBuilder
-  private var bottomToolbar: some ToolbarContent {
-    if editMode?.wrappedValue == .active {
-      ToolbarItem(placement: .bottomBar) {
-        Text("공유")
-      }
-      ToolbarItem(placement: .bottomBar) {
-        Text("복제")
-      }
-      ToolbarItem(placement: .bottomBar) {
-        Text("삭제")
+@ToolbarContentBuilder
+private var bottomToolbar: some ToolbarContent {
+  if editMode?.wrappedValue == .active {
+    ToolbarItem(placement: .bottomBar) {
+      HStack {
+        // Left
+        Button {
+          // TODO: 공유 액션
+          print("공유 tapped")
+        } label: {
+            Text("공유")
+        }
+
+        Spacer()
+
+        // Center
+        Button {
+          // TODO: 복제 액션
+          print("복제 tapped")
+        } label: {
+          Text("복제")
+        }
+
+        Spacer()
+
+        // Right
+        Button(role: .destructive) {
+          // TODO: 삭제 액션
+          print("삭제 tapped")
+        } label: {
+          Text("삭제")
+        }
       }
     }
   }
+}
 }
 
 #Preview {

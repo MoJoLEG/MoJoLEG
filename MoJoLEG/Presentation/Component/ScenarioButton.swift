@@ -10,7 +10,7 @@ import SwiftUI
 struct ScenarioButton: View {
     let title: String
     let date: String
-    let isFavorite: Bool
+    @Binding var isFavorite: Bool
     let action: () -> Void
 
     var body: some View {
@@ -18,13 +18,24 @@ struct ScenarioButton: View {
             action()
         } label: {
             VStack(spacing: 36) {
-                Image(isFavorite ? .favoriteBox : .box)
+                Image("Box")
                     .resizable()
                     .scaledToFit()
                 VStack(spacing: 6) {
-                    Text(title)
-                        .font(.system(size: 20, weight: .semibold))
-                        .foregroundStyle(.skyBlue)
+                    HStack {
+                        ZStack {
+                            Button {
+                                isFavorite.toggle()
+                            } label: {
+                                Image(systemName: isFavorite ? "star.fill" : "star")
+                                    .foregroundColor(isFavorite ? .red : .gray)
+                                    .frame(width: 20, height: 20)
+                            }
+                        }
+                        Text(title)
+                            .font(.system(size: 20, weight: .semibold))
+                            .foregroundStyle(.skyBlue)
+                    }
                     Text(date)
                         .font(.system(size: 14))
                         .foregroundStyle(.gray500)
@@ -35,8 +46,11 @@ struct ScenarioButton: View {
 }
 
 #Preview {
-    HStack {
-        ScenarioButton(title: "채집자", date: "오늘 오전 8:23", isFavorite: false) {}
-        ScenarioButton(title: "채집자", date: "오늘 오전 8:23", isFavorite: true) {}
+    @State var fav1 = false
+    @State var fav2 = true
+
+    return HStack {
+        ScenarioButton(title: "채집자", date: "오늘 오전 8:23", isFavorite: $fav1) {}
+        ScenarioButton(title: "채집자", date: "오늘 오전 8:23", isFavorite: $fav2) {}
     }
 }
