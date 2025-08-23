@@ -7,6 +7,16 @@
 
 import SwiftUI
 
+struct myView: View {
+    var body: some View {
+        HStack {
+            UpstageView()
+            UpstageView()
+            UpstageView()
+        }
+    }
+}
+
 struct UpstageView: View {
     @State private var prompt: String = ""
     @State private var responses: [UpstageResponseDto] = []
@@ -72,5 +82,5 @@ struct UpstageView: View {
 }
 
 #Preview {
-    UpstageView()
+    myView()
 }

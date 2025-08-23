@@ -12,7 +12,7 @@ import SwiftUI
 struct MoJoLEGApp: App {
     var body: some Scene {
         WindowGroup {
-            ChooseScenarioView()
+            DevView()
         }
         .modelContainer(
             for: [SceneBreakdown.self, CharacterItem.self, PropItem.self],
