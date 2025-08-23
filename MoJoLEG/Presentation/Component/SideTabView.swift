@@ -10,29 +10,27 @@ import SwiftUI
 struct SideTabView: View {
   let tabs: [String]
   @Binding var selectedTab: String
-  var dismiss: (() -> Void)? = nil
 
   @Namespace private var namespace
 
   var body: some View {
     VStack(alignment: .leading) {
       HStack {
-        Text("로고")
-          .font(.title)
-          .bold()
+        Image(.logo)
+          .resizable()
+          .scaledToFit()
+          .frame(maxWidth: 72)
         
         Spacer()
-        
-        Button {
-          dismiss?()
-        } label: {
-          Image(systemName: "xmark")
-        }
       }
       .padding(.vertical)
       
       ForEach(tabs, id: \.self) { tab in
-        Text(tab)
+        let lines = tab.components(separatedBy: .newlines)
+        let firstLine = lines.first
+        
+        Text(firstLine ?? "")
+          .foregroundStyle(.gray900)
           .padding(16)
           .background {
             if tab == selectedTab {

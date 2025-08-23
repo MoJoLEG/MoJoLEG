@@ -26,6 +26,7 @@ struct PropListView: View {
   @State private var isSearchBarPresented: Bool = false
   @State private var searchText: String = ""
   @State private var selectedLayout: PropLayout = .list
+  @State private var selectedScene: String = ""
 
   @Namespace private var namespace
 
@@ -174,21 +175,46 @@ struct PropListView: View {
   }
 
   private var propList: some View {
-    ScrollView([.horizontal, .vertical]) {
-      LazyVStack(pinnedViews: .sectionHeaders) {
-        Section {
-          ForEach(filteredProps) { prop in
-            PropListRowView(prop: prop)
+    ScrollViewReader { proxy in
+      ScrollView([.horizontal, .vertical]) {
+        LazyVStack(pinnedViews: .sectionHeaders) {
+          Section {
+            ForEach(filteredProps) { prop in
+              PropListRowView(prop: prop)
+                .id(prop.id)
+            }
+          } header: {
+            header
+              .id("__header__")
           }
-        } header: {
-          header
         }
+        .padding(.horizontal, 40)
+        .safeAreaPadding(.trailing, 580)
+        .safeAreaPadding(.bottom, 800)
       }
-      .padding(.horizontal, 40)
-      .safeAreaPadding(.trailing, 580)
-      .safeAreaPadding(.bottom, 800)
+      .defaultScrollAnchor(.topLeading)
+      .onChange(of: selectedScene) { oldValue, newValue in
+        scrollToScene(newValue, using: proxy)
+        isSidebarPresented = false
+      }
     }
-    .defaultScrollAnchor(.topLeading)
+  }
+  
+  private func scrollToScene(_ scene: String, using proxy: ScrollViewProxy) {
+    // Extract a numeric scene index from strings like "S#12" if needed
+    let targetNumber: Int? = {
+      if let n = Int(scene) { return n }
+      let digits = scene.filter { $0.isNumber }
+      return Int(digits)
+    }()
+
+    guard let number = targetNumber else { return }
+
+    if let target = filteredProps.first(where: { $0.sceneNumber == number }) {
+      withAnimation {
+        proxy.scrollTo(target.id, anchor: .topLeading)
+      }
+    }
   }
 
   private var header: some View {
@@ -254,9 +280,7 @@ struct PropListView: View {
 
       HStack {
         if isSidebarPresented {
-          SideTabView(tabs: [], selectedTab: .constant("hi")) {
-            isSidebarPresented = false
-          }
+          SideTabView(tabs: scenario.scenes.map { $0.title }, selectedTab: $selectedScene)
           .frame(maxWidth: 360)
           .transition(.move(edge: .leading).combined(with: .opacity))
         }

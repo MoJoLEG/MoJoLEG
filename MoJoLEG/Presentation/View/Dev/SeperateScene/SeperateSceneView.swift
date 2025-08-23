@@ -10,7 +10,7 @@ internal import UniformTypeIdentifiers
 
 struct SeperateSceneView: View {
     @State private var scenario: String? = nil
-    @State private var scenes: [String]? = nil
+    @State private var scenes: [ScenarioScene]? = nil
     @State private var isFileImporterPresented: Bool = false
     @State private var extractTask: Task<Void, Never>? = nil
 
@@ -26,7 +26,7 @@ struct SeperateSceneView: View {
                             Text("Seperated")
                                 .font(.headline)
                             ForEach(scenes, id: \.self) { scene in
-                                Text(scene)
+                              Text(scene.content)
                                     .padding()
                                     .background(
                                         .ultraThinMaterial,

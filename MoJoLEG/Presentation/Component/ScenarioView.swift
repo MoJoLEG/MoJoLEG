@@ -8,19 +8,19 @@
 import SwiftUI
 
 struct ScenarioView: View {
-  let scenes: [String]
+  let scenes: [ScenarioScene]
 
   var body: some View {
     ScrollView {
       LazyVStack(alignment: .leading) {
         ForEach(scenes, id: \.self) { scene in
-          Text(scene)
+          Text(scene.content)
             .foregroundStyle(.gray900)
         }
       }
-      .padding(32)
       .frame(maxWidth: .infinity, alignment: .leading)
     }
+    .padding(32)
     .background {
       RoundedRectangle(cornerRadius: 24)
         .fill(.white)
@@ -30,5 +30,5 @@ struct ScenarioView: View {
 }
 
 #Preview {
-  ScenarioView(scenes: ["#1 Start", "#2 End"])
+  ScenarioView(scenes: [])
 }

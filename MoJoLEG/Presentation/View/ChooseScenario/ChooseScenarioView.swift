@@ -104,7 +104,7 @@ struct ChooseScenarioView: View {
 
     /// 3. Upstage에 씬 분석 요청
     let responses = await UpstageService.shared
-      .processScenesInParallel(separated)
+      .processScenesInParallel(separated.map { $0.content })
     let contents = responses.compactMap {
       $0.choices.first?.message.content
     }

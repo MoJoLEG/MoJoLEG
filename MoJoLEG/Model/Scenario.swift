@@ -12,7 +12,7 @@ import SwiftData
 class Scenario {
   var id: UUID
   var title: String
-  var scenes: [String]
+  var scenes: [ScenarioScene]
   var props: [Prop]
   var isFavorite: Bool
   var createdAt: Date
@@ -21,7 +21,7 @@ class Scenario {
   init(
     id: UUID,
     title: String,
-    scenes: [String],
+    scenes: [ScenarioScene],
     props: [Prop],
     isFavorite: Bool,
     createdAt: Date,
