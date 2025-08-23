@@ -5,98 +5,150 @@
 //  Created by 정희균 on 8/23/25.
 //
 
+import SwiftData
 import SwiftUI
 internal import UniformTypeIdentifiers
 
 struct ChooseScenarioView: View {
-    enum ScenarioFilterState {
-        case all
-        case favorite
-    }
-    
-    @State private var isFileOpen: Bool = false
-    @State private var scenarioFilterState: ScenarioFilterState = .all
-    @State private var isSearchBarPresented: Bool = false
+  enum ScenarioFilterState {
+    case all
+    case favorite
+  }
+
+  @State private var isFileOpen: Bool = false
+  @State private var scenarioFilterState: ScenarioFilterState = .all
+  @State private var isSearchBarPresented: Bool = false
+  @State private var isLoadingViewPresented: Bool = false
+
+  @Environment(\.modelContext) private var context
+  @Query(sort: \Scenario.updatedAt, order: .forward)
+  private var scenarios: [Scenario]
+
+  @State private var selectedScenario: Scenario? = nil
 
   @Environment(\.editMode) private var editMode
-    
-    @StateObject private var navigationManager = NavigationManager()
 
   @Namespace private var namespace
 
-  @State private var processedSceneTexts: [String] = []
-
   var body: some View {
-      NavigationStack(path: $navigationManager.path){
-          ZStack {
-              background
-              
-              VStack {
-                  navigationTitle
-                  
-                  topToolbar
-                  
-                  scenarioList
-                  
-              }
-              .padding(40)
-          }
-          .navigationDestination(for: ViewType.self) { value in
-              switch value {
-              case .Loading:
-                  LoadingView()
-                      .environmentObject(navigationManager)
-              case .PropList:
-                  PropListView(scenario: .sample)
-              }
-          }
-          .toolbar {
-              bottomToolbar
-          }
-          .fileImporter(isPresented: $isFileOpen,
-                        allowedContentTypes: [.pdf])
-          { result in
-              switch result {
-              case .success(let url):
-                  Task {
-                      guard url.startAccessingSecurityScopedResource() else { return }
-                      defer { url.stopAccessingSecurityScopedResource() }
+    NavigationStack {
+      ZStack {
+        background
 
-                      // 1. Extract text from PDF
-                      let extracted = ExtractTextService.shared.extractText(from: url, fileType: .pdf)
+        VStack {
+          navigationTitle
 
-                      // 2. Separate scenes from extracted text
-                      if let extracted, !extracted.isEmpty {
-                          let separated = SeperateSceneService.shared.separteScenes(scenario: extracted)
+          topToolbar
 
-                          // 3. Upstage에 씬들을 순차적으로 보냄
-                          if let separated, !separated.isEmpty {
-                              await MainActor.run {
-                                  navigationManager.navigate(to: .Loading)
-                              }
-                let responses = await UpstageService.shared
-                  .processScenesInParallel(separated)
-                let contents = responses.map {
-                  $0.choices.first?.message.content ?? ""
-                }
-                              await MainActor.run {
-                                  self.processedSceneTexts = contents
-                                  navigationManager.navigate(to: .PropList)
-                              }
-                          } else {
-                              print("Scene separation failed or no scenes")
-                          }
-                      } else {
-                          print("PDF extraction failed")
-                      }
-                  }
-                  
-              case .failure(let error):
-                  print(error.localizedDescription)
-              }
+          scenarioList
+        }
+        .padding(40)
+
+        if isLoadingViewPresented {
+          LoadingView()
+            .ignoresSafeArea()
+        }
+      }
+      .navigationDestination(item: $selectedScenario) { scenario in
+        PropListView(scenario: scenario)
+      }
+      .toolbar {
+        bottomToolbar
+      }
+      .fileImporter(
+        isPresented: $isFileOpen,
+        allowedContentTypes: [.pdf]
+      ) { result in
+        switch result {
+        case .success(let url):
+          Task {
+            guard url.startAccessingSecurityScopedResource() else { return }
+            defer { url.stopAccessingSecurityScopedResource() }
+
+            await loadScenario(url)
           }
+        case .failure(let error):
+          print(error.localizedDescription)
+        }
       }
     }
+  }
+
+  private func loadScenario(_ url: URL) async {
+    isLoadingViewPresented = true
+
+    defer {
+      isLoadingViewPresented = false
+    }
+
+    /// 1. PDF에서 텍스트 추출
+    let extracted = ExtractTextService.shared.extractText(
+      from: url,
+      fileType: .pdf
+    )
+
+    guard let extracted, !extracted.isEmpty else {
+      print("Failed to extract text from PDF")
+      return
+    }
+
+    /// 2. 추출된 텍스트에서 씬 분리
+    let separated = SeperateSceneService.shared.separteScenes(
+      scenario: extracted
+    )
+
+    guard let separated, !separated.isEmpty else {
+      print("Failed to separate scenes")
+      return
+    }
+
+    /// 3. Upstage에 씬 분석 요청
+    let responses = await UpstageService.shared
+      .processScenesInParallel(separated)
+    let contents = responses.compactMap {
+      $0.choices.first?.message.content
+    }
+
+    guard !contents.isEmpty else {
+      print("Failed to analyze scenes")
+      return
+    }
+
+    var allProps: [Prop] = []
+    for content in contents {
+      do {
+        let props = try PropDecodeService.shared.decode(content)
+
+        allProps.append(contentsOf: props)
+      } catch {
+        print("Failed to decode prop:", error.localizedDescription)
+      }
+    }
+
+    let lines = extracted.components(separatedBy: .newlines)
+    var title: String = "Untitled"
+    if let firstLine = lines.first, !firstLine.isEmpty {
+      title = firstLine
+    }
+
+    let scenario = Scenario(
+      id: UUID(),
+      title: title,
+      scenes: separated,
+      props: allProps,
+      isFavorite: false,
+      createdAt: Date(),
+      updatedAt: Date()
+    )
+
+    context.insert(scenario)
+
+    do {
+      try context.save()
+    } catch {
+      print("Failed to save data:", error.localizedDescription)
+    }
+  }
 
   private var background: some View {
     Color.gray100
@@ -107,6 +159,7 @@ struct ChooseScenarioView: View {
     HStack {
       Text("소품리스트 모음")
         .font(.system(size: 40, weight: .semibold))
+        .foregroundStyle(.gray900)
       Spacer()
     }
     .padding(.bottom, 24)
@@ -214,30 +267,34 @@ struct ChooseScenarioView: View {
         addScenarioButton
           .frame(maxWidth: 220, maxHeight: .infinity, alignment: .top)
 
-        ScenarioButton(
-          title: "채집자",
-          date: "오늘 오전 8:23",
-          isFavorite: false
-        ) {}
-        .frame(maxWidth: 220, maxHeight: .infinity, alignment: .top)
+        ForEach(scenarios) { scenario in
+          ScenarioButton(
+            title: scenario.title,
+            date: scenario.updatedAt.formatted(date: .numeric, time: .omitted),
+            isFavorite: scenario.isFavorite
+          ) {
+            selectedScenario = scenario
+          }
+          .frame(maxWidth: 220, maxHeight: .infinity, alignment: .top)
+        }
       }
     }
   }
 
-    private var addScenarioButton: some View {
-        Button {
-            isFileOpen.toggle()
-        } label: {
-            VStack(spacing: 36) {
-                Image(.plusBox)
-                    .resizable()
-                    .scaledToFit()
-                Text("신규 시나리오")
-                    .font(.system(size: 20, weight: .semibold))
-                    .foregroundStyle(.primaryYellow)
-            }
-        }
+  private var addScenarioButton: some View {
+    Button {
+      isFileOpen.toggle()
+    } label: {
+      VStack(spacing: 36) {
+        Image(.plusBox)
+          .resizable()
+          .scaledToFit()
+        Text("신규 시나리오")
+          .font(.system(size: 20, weight: .semibold))
+          .foregroundStyle(.primaryYellow)
+      }
     }
+  }
 
   @ToolbarContentBuilder
   private var bottomToolbar: some ToolbarContent {
@@ -257,4 +314,8 @@ struct ChooseScenarioView: View {
 
 #Preview {
   ChooseScenarioView()
+    .modelContainer(
+      for: [Scenario.self, Prop.self],
+      inMemory: true
+    )
 }

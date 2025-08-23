@@ -32,4 +32,15 @@ class NavigationManager: ObservableObject {
     func pop() {
         path.removeLast()
     }
+  
+  @ViewBuilder
+  func view(_ viewType: ViewType) -> some View {
+    switch viewType {
+    case .Loading:
+      LoadingView()
+        .toolbarVisibility(.hidden, for: .navigationBar)
+    case .PropList:
+      PropListView(scenario: .sample)
+    }
+  }
 }

@@ -89,6 +89,7 @@ struct PropListView: View {
             .tint(.primaryYellow)
             .frame(maxWidth: 72)
           Text("시나리오 보기")
+            .foregroundStyle(.gray900)
             .padding(.horizontal, 10)
         }
         ShareLink(item: .applicationSupportDirectory)
@@ -101,6 +102,7 @@ struct PropListView: View {
   private var scenarioTitle: some View {
     Text(scenario.title)
       .font(.system(size: 40, weight: .semibold))
+      .foregroundStyle(.gray900)
   }
 
   private var layoutPicker: some View {
@@ -217,6 +219,7 @@ struct PropListView: View {
         .frame(minWidth: 128)
     }
     .font(.system(size: 17, weight: .semibold))
+    .foregroundStyle(.gray900)
     .padding(.vertical, 10)
     .padding(.horizontal, 28)
     .frame(minWidth: 1280)
@@ -271,10 +274,7 @@ struct PropListView: View {
   let scenario = Scenario.sample
   
   scenario.props = [
-    Prop(id: UUID(), isCompleted: false, sceneNumber: 2, category: .major, name: "기타", location: "집안", environment: .interior, character: "레몬", note: "기타"),
-    Prop(id: UUID(), isCompleted: true, sceneNumber: 1, category: .minor, name: "사과", location: "집안", environment: .interior, character: "모니카", note: "기타"),
-    Prop(id: UUID(), isCompleted: false, sceneNumber: 4, category: .major, name: "사과", location: "집밖", environment: .interior, character: "조이드", note: "기타"),
-    Prop(id: UUID(), isCompleted: false, sceneNumber: 3, category: .uncategorized, name: "사과", location: "집밖", environment: .interior, character: "그린", note: "기타"),
+    .sample
   ]
   
   return PropListView(scenario: scenario)

@@ -14,6 +14,7 @@ class Scenario {
   var title: String
   var scenes: [String]
   var props: [Prop]
+  var isFavorite: Bool
   var createdAt: Date
   var updatedAt: Date
 
@@ -22,6 +23,7 @@ class Scenario {
     title: String,
     scenes: [String],
     props: [Prop],
+    isFavorite: Bool,
     createdAt: Date,
     updatedAt: Date
   ) {
@@ -29,6 +31,7 @@ class Scenario {
     self.title = title
     self.scenes = scenes
     self.props = props
+    self.isFavorite = isFavorite
     self.createdAt = createdAt
     self.updatedAt = updatedAt
   }
@@ -41,6 +44,7 @@ extension Scenario {
       title: "채집자",
       scenes: [],
       props: [],
+      isFavorite: false,
       createdAt: Date(),
       updatedAt: Date()
     )

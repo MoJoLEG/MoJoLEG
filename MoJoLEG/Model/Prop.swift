@@ -15,9 +15,10 @@ class Prop {
   var sceneNumber: Int
   var category: PropCategory
   var name: String
-  var location: String
+  var majorLocation: String
+  var minorLocation: String?
   var environment: PropEnvironment
-  var character: String
+  var character: String?
   var note: String
   var count: Int?
   var price: Double?
@@ -30,9 +31,10 @@ class Prop {
     sceneNumber: Int,
     category: PropCategory,
     name: String,
-    location: String,
+    majorLocation: String,
+    minorLocation: String? = nil,
     environment: PropEnvironment,
-    character: String,
+    character: String? = nil,
     note: String,
     count: Int? = nil,
     price: Double? = nil,
@@ -44,7 +46,8 @@ class Prop {
     self.sceneNumber = sceneNumber
     self.category = category
     self.name = name
-    self.location = location
+    self.majorLocation = majorLocation
+    self.minorLocation = minorLocation
     self.environment = environment
     self.character = character
     self.note = note
@@ -63,7 +66,8 @@ extension Prop {
       sceneNumber: 1,
       category: .major,
       name: "책상",
-      location: "상훈의집/방",
+      majorLocation: "상훈의집",
+      minorLocation: "방",
       environment: .interior,
       character: "상훈",
       note: "낡은 창고"

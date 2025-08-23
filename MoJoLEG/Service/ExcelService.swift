@@ -72,13 +72,13 @@ final class ExcelService {
       cell.value = .text(prop.name)
       
       cell = sheet.AddCell(XCoords(row: 2 + index, col: 5))
-      cell.value = .text(prop.location)
+      cell.value = .text("\(prop.majorLocation)/\(prop.minorLocation ?? "n/a")")
       
       cell = sheet.AddCell(XCoords(row: 2 + index, col: 6))
       cell.value = .text(prop.environment.toString)
       
       cell = sheet.AddCell(XCoords(row: 2 + index, col: 7))
-      cell.value = .text(prop.character)
+      cell.value = .text(prop.character ?? "n/a")
       
       cell = sheet.AddCell(XCoords(row: 2 + index, col: 8))
       cell.value = .text(prop.note)

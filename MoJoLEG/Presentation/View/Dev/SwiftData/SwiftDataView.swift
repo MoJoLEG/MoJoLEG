@@ -17,14 +17,7 @@ struct SwiftDataView: View {
   var body: some View {
     List {
       Button("Add") {
-        let scenario = Scenario(
-          id: UUID(),
-          title: "테스트",
-          scenes: [],
-          props: [],
-          createdAt: Date(),
-          updatedAt: Date()
-        )
+        let scenario = Scenario.sample
 
         context.insert(scenario)
 

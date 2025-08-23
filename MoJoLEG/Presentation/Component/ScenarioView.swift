@@ -15,13 +15,17 @@ struct ScenarioView: View {
       LazyVStack(alignment: .leading) {
         ForEach(scenes, id: \.self) { scene in
           Text(scene)
+            .foregroundStyle(.gray900)
         }
       }
       .padding(32)
       .frame(maxWidth: .infinity, alignment: .leading)
     }
-    .background(.white, in: RoundedRectangle(cornerRadius: 24))
-    .shadow(color: .black.opacity(0.25), radius: 20, x: 4, y: 4)
+    .background {
+      RoundedRectangle(cornerRadius: 24)
+        .fill(.white)
+        .shadow(color: .black.opacity(0.25), radius: 20, x: 4, y: 4)
+    }
   }
 }
 
