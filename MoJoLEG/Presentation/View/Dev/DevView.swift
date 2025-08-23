@@ -17,6 +17,9 @@ struct DevView: View {
                 NavigationLink("Extract Text") {
                     ExtractTextView()
                 }
+                NavigationLink("Seperate Scene") {
+                    SeperateSceneView()
+                }
             }
             .navigationTitle("Dev")
         }
