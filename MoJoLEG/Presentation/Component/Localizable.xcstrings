@@ -101,7 +101,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Quantity"
+            "value" : "Qty"
           }
         }
       }
@@ -152,7 +152,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Category"
+            "value" : "Type"
           }
         }
       }
@@ -253,7 +253,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Prop List"
+            "value" : "Film Material"
           }
         }
       }
@@ -315,7 +315,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Prop Name"
+            "value" : "Name"
           }
         }
       }
@@ -326,6 +326,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Location"
+          }
+        }
+      }
+    },
+    "전체 선택" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Select All"
           }
         }
       }

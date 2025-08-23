@@ -256,14 +256,23 @@ struct ChooseScenarioView: View {
   }
 
   private var selectButton: some View {
-    Button(editMode?.wrappedValue == .active ? "완료" : "선택") {
-      if editMode?.wrappedValue == .active {
-        editMode?.wrappedValue = .inactive
-        selectedScenarios.removeAll()
-      } else {
-        editMode?.wrappedValue = .active
+      HStack{
+          if editMode?.wrappedValue == .active {
+              Button("전체 선택") {
+                  selectedScenarios = Set(filteredScenarios.map { $0.id })
+              }
+              .padding(.trailing, 20)
+          }
+          Button(editMode?.wrappedValue == .active ? "완료" : "선택") {
+              if editMode?.wrappedValue == .active {
+                  editMode?.wrappedValue = .inactive
+                  selectedScenarios.removeAll()
+              } else {
+                  editMode?.wrappedValue = .active
+              }
+          }
+          .padding(.trailing, 20)
       }
-    }
   }
 
   private var searchBar: some View {
