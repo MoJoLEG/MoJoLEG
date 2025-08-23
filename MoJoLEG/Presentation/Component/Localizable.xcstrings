@@ -242,7 +242,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Choose"
+            "value" : "Select"
           }
         }
       }
@@ -295,6 +295,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Props are organized by the system on a per-scene basis."
+          }
+        }
+      }
+    },
+    "완료" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Done"
           }
         }
       }

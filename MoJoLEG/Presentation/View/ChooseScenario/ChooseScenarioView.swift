@@ -160,6 +160,33 @@ struct ChooseScenarioView: View {
     }
   }
 
+  private func duplicateSelectedScenarios() {
+    let targets = scenarios.filter { selectedScenarios.contains($0.id) }
+    guard !targets.isEmpty else { return }
+    for s in targets {
+      let copy = Scenario(
+        id: UUID(),
+        title: s.title + " 복사",
+        scenes: s.scenes,
+        props: s.props,
+        isFavorite: s.isFavorite,
+        createdAt: Date(),
+        updatedAt: Date()
+      )
+      context.insert(copy)
+    }
+    do { try context.save() } catch { print("Duplicate save error:", error.localizedDescription) }
+    selectedScenarios.removeAll()
+  }
+
+  private func deleteSelectedScenarios() {
+    let targets = scenarios.filter { selectedScenarios.contains($0.id) }
+    guard !targets.isEmpty else { return }
+    for t in targets { context.delete(t) }
+    do { try context.save() } catch { print("Delete save error:", error.localizedDescription) }
+    selectedScenarios.removeAll()
+  }
+
   private var background: some View {
     Color.gray100
       .ignoresSafeArea()
@@ -232,9 +259,10 @@ struct ChooseScenarioView: View {
   }
 
   private var selectButton: some View {
-    Button("선택") {
+    Button(editMode?.wrappedValue == .active ? "완료" : "선택") {
       if editMode?.wrappedValue == .active {
         editMode?.wrappedValue = .inactive
+        selectedScenarios.removeAll()
       } else {
         editMode?.wrappedValue = .active
       }
@@ -346,33 +374,34 @@ private var bottomToolbar: some ToolbarContent {
   if editMode?.wrappedValue == .active {
     ToolbarItem(placement: .bottomBar) {
       HStack {
-        // Left
+        // Left - 공유 (remain TODO for now)
         Button {
-          // TODO: 공유 액션
-          print("공유 tapped")
+          // TODO: 공유 액션 (selectedScenarios 사용)
+          print("공유 tapped: \(selectedScenarios.count) selected")
         } label: {
             Text("공유")
         }
+        .disabled(selectedScenarios.isEmpty)
 
         Spacer()
 
-        // Center
+        // Center - 복제
         Button {
-          // TODO: 복제 액션
-          print("복제 tapped")
+          duplicateSelectedScenarios()
         } label: {
           Text("복제")
         }
+        .disabled(selectedScenarios.isEmpty)
 
         Spacer()
 
-        // Right
+        // Right - 삭제
         Button(role: .destructive) {
-          // TODO: 삭제 액션
-          print("삭제 tapped")
+          deleteSelectedScenarios()
         } label: {
           Text("삭제")
         }
+        .disabled(selectedScenarios.isEmpty)
       }
     }
   }
