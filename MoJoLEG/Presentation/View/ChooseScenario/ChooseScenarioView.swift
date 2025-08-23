@@ -6,13 +6,15 @@
 //
 
 import SwiftUI
+internal import UniformTypeIdentifiers
 
 struct ChooseScenarioView: View {
     enum ScenarioFilterState {
         case all
         case favorite
     }
-
+    
+    @State private var isFileOpen: Bool = false
     @State private var scenarioFilterState: ScenarioFilterState = .all
     @State private var isSearchBarPresented: Bool = false
 
@@ -34,6 +36,21 @@ struct ChooseScenarioView: View {
         }
         .toolbar {
             bottomToolbar
+        }
+        .fileImporter(isPresented: $isFileOpen,
+                      allowedContentTypes: [.pdf])
+        { result in
+            switch result {
+            case .success(let file):
+                guard let url = URL(string: file.absoluteString) else {
+                    print("there's no file")
+                    return
+                }
+                print(url)
+                
+            case .failure(let error):
+                print(error.localizedDescription)
+            }
         }
     }
 
@@ -145,7 +162,7 @@ struct ChooseScenarioView: View {
 
     private var addScenarioButton: some View {
         Button {
-
+            isFileOpen.toggle()
         } label: {
             VStack(spacing: 36) {
                 Image(.plusBox)
