@@ -62,7 +62,7 @@ enum UpstageRouter: URLRequestConvertible {
         }
 
         switch self {
-        case .request(var upstageRequestDto):
+        case .request(let upstageRequestDto):
             // Prepend system prompt from Prompt.txt
             let systemPrompt = UpstageMessageRequestDto(role: "system", content: loadPromptText())
             var updatedMessages = [systemPrompt]
