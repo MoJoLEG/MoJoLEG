@@ -12,7 +12,7 @@ struct DevView: View {
         NavigationStack {
             List {
                 NavigationLink("Upstage") {
-                    UpstageView()
+                    myView()
                 }
                 NavigationLink("Extract Text") {
                     ExtractTextView()
