@@ -13,6 +13,8 @@ struct PropListView: View {
     case gallery
   }
 
+  let scenario: Scenario
+
   @State private var isScenarioPresented: Bool = false
   @State private var isSidebarPresented: Bool = false
   @State private var isSearchBarPresented: Bool = false
@@ -90,7 +92,7 @@ struct PropListView: View {
   }
 
   private var scenarioTitle: some View {
-    Text("채집자")
+    Text(scenario.title)
       .font(.system(size: 40, weight: .semibold))
   }
 
@@ -162,8 +164,8 @@ struct PropListView: View {
     ScrollView([.horizontal, .vertical]) {
       LazyVStack(pinnedViews: .sectionHeaders) {
         Section {
-          ForEach(0..<100) { index in
-            PropListRowView(prop: .sample)
+          ForEach(scenario.props) { prop in
+            PropListRowView(prop: prop)
           }
         } header: {
           header
@@ -171,6 +173,7 @@ struct PropListView: View {
       }
       .padding(.horizontal, 40)
       .safeAreaPadding(.trailing, 580)
+      .safeAreaPadding(.bottom, 800)
     }
     .defaultScrollAnchor(.topLeading)
   }
@@ -214,7 +217,7 @@ struct PropListView: View {
       Spacer()
 
       if isScenarioPresented {
-        ScenarioView(scenes: ["Hi"])
+        ScenarioView(scenes: scenario.scenes)
           .frame(maxWidth: 540)
           .transition(.move(edge: .trailing).combined(with: .opacity))
       }
@@ -254,5 +257,5 @@ struct PropListView: View {
 }
 
 #Preview {
-  PropListView()
+  PropListView(scenario: .sample)
 }

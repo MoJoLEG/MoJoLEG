@@ -33,3 +33,16 @@ class Scenario {
     self.updatedAt = updatedAt
   }
 }
+
+extension Scenario {
+  static var sample: Scenario {
+    Scenario(
+      id: UUID(),
+      title: "채집자",
+      scenes: [],
+      props: [],
+      createdAt: Date(),
+      updatedAt: Date()
+    )
+  }
+}
