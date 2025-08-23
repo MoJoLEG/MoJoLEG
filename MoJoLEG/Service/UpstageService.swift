@@ -55,7 +55,6 @@ enum UpstageRouter: URLRequestConvertible {
         var request = try URLRequest(url: url, method: .post)
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         if let apiKey = Bundle.main.infoDictionary?["API_KEY"] as? String {
-            print(apiKey)
             request.setValue(
                 "Bearer \(apiKey)",
                 forHTTPHeaderField: "Authorization"

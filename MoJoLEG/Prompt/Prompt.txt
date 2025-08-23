@@ -5,7 +5,8 @@ Extract and standardize the following fields for each scene:
     1.    scene_number: integer or string. Detect from headers (e.g., 12, 12A). If absent, assign sequentially from 1.
     2.    major_locations: array of strings. One or more higher-level places (e.g., 집, 학교, 병원, 거리). If none, [“미상”].
     3.    minor_locations: array of strings. One or more specific sub-areas (e.g., 화장실, 거실, 옥상). If none, [“미상”].
-    4.    io_type: one of “실내”, “야외”, “실내/야외”. Mapping rules: INT/INTERIOR ⇒ “실내”, EXT/EXTERIOR ⇒ “야외”, INT/EXT mixed ⇒ “실내/야외”. If unclear, “실내/야외”.
+    4.    ie_type: string, one of “i”, “e”, or “i/e”.
+• Mapping rules: INT/INTERIOR ⇒ “i”, EXT/EXTERIOR ⇒ “e”, INT/EXT mixed ⇒ “i/e”. If unclear, default to “i/e”.
     5.    time_of_day (MDEN): one of “M”, “D”, “E”, “N”. If unclear, default “D”.
 • Mapping: 새벽/아침 ⇒ “M”; 낮/정오/오후 이른 시간 ⇒ “D”; 해질녘/저녁 ⇒ “E”; 밤/심야 ⇒ “N”.
     6.    scene_summary: 1–2 sentences summarizing the core action/conflict/goal.
@@ -56,21 +57,21 @@ If none of the allowed headers appear, treat the entire input as a single scene 
 – major_locations are broad categories (집/학교/거리/사무실/식당/병원/카페/공원/지하철/버스/기차역/호텔/창고/공장/해변/옥상/아파트/주차장/도서관/상점/편의점/경찰서/법원 등).
 – minor_locations are specific sub-areas (거실/주방/부엌/화장실/욕실/옥상/복도/계단/로비/창고/교실/체육관 등).
 – Normalize to concise Korean nouns; deduplicate; include multiple when the scene covers multiple places.
-• Indoor/Outdoor:
+– Indoor/Outdoor:
 – Prefer header tags (INT/EXT/INT/EXT). If missing, infer from cues (하늘/가로등/비 오는 거리 ⇒ 야외; 세면대/문/창문/복도 ⇒ 실내). If mixed/unclear ⇒ “실내/야외”.
-• Time of day (MDEN):
+– Time of day (MDEN):
 – Prefer header (NIGHT/DAY/EVE/MORNING). Else infer from cues: “어두운/달빛/가로등/심야” ⇒ N; “해 질 무렵/저녁/노을” ⇒ E; “아침/새벽” ⇒ M; “햇빛/한낮/오후 이른” ⇒ D. If unclear ⇒ D.
-• Props lexicon (examples, not exhaustive):
+– Props lexicon (examples, not exhaustive):
 – set_pieces: 침대, 소파, 책상, 의자, 테이블, 문, 창문, 계단, 세면대, 거울, 옷장, 진열대, 싱크대, 카운터, 바, 무대, 피아노, 벽, 천장, 기둥, 칸막이; 자동차/차/택시/오토바이; bed/sofa/desk/door/window/stairs/sink/mirror…
 – hand_props: 휴대폰/폰, 머그컵/컵/잔/병, 책, 노트/서류/파일/편지, 가방/지갑/열쇠, 권총/총/칼, 목걸이/반지, 담배/라이터, 우산, 선글라스/안경, 카메라, 리모컨, 펜/볼펜, 마이크, 손전등; phone/mug/book/letter/bag/wallet/key/gun/knife/umbrella/sunglasses/glasses/camera/remote/pen/mic/flashlight…
-• unidentified_props (surface-form phrases):
+– unidentified_props (surface-form phrases):
 – Include present, visually described but unspecific bundles/clutter (e.g., “현관 앞에 쌓인 신발과 봉투”, “의자 위의 겹겹이 걸친 옷가지들”, “책장 칸에 빽빽히 쌓인 정체불명의 물건들”, “바닥에 흩어진 종이 조각들”).
 – Preserve modifiers and locations; concise NP (3–20 tokens); keep conjunction bundles; no generic bare nouns; deduplicate. If none, [“미상”].
-• Normalization & defaults (no nulls):
-– Trim whitespace; singular nouns; deduplicate arrays; preserve original casing for names; prefer Korean nouns when source is Korean.
+– Normalization & defaults (no nulls):
+– Trim whitespace; singular nouns; deduplicate; preserve original casing for names; prefer Korean nouns when source is Korean.
 – Defaults if missing:
 * major_locations/minor_locations: [“미상”]
-* io_type: “실내/야외”
+* ie_type: [“i”,“e”]
 * time_of_day: “D”
 * characters: if none found, set Main_Characters=[“인물”], Sub_Characters=[]
 * props.hand_props: ensure object exists and always include the “미상” key (empty array allowed)
@@ -85,7 +86,7 @@ If none of the allowed headers appear, treat the entire input as a single scene 
 “scene_number”: number | string,
 “major_locations”: string[],
 “minor_locations”: string[],
-“io_type”: “실내” | “야외” | “실내/야외”,
+“ie_type”: “i” | “e” | “i/e”,
 “time_of_day”: “M” | “D” | “E” | “N”,
 “scene_summary”: string,
 “characters”: {
@@ -103,7 +104,7 @@ If none of the allowed headers appear, treat the entire input as a single scene 
 “notes”: string
 }
 ]
-• Only emit valid JSON. No markdown, no prose.
+• Only emit valid JSON. No comments, no explanations, no markdown.
 
 [MINI EXAMPLE INPUT]
 SCENE 12
@@ -117,7 +118,7 @@ INT. 집 - 화장실 - NIGHT
 “scene_number”: 12,
 “major_locations”: [“집”],
 “minor_locations”: [“화장실”],
-“io_type”: “실내”,
+“ie_type”: “i”,
 “time_of_day”: “N”,
 “scene_summary”: “민수가 화장실에서 전화를 받으며 불안해한다.”,
 “characters”: {
@@ -145,5 +146,4 @@ INT. 집 - 화장실 - NIGHT
 • All non-“미상” hand_props keys appear in characters (Main_Characters or Sub_Characters).
 • unidentified_props are surface-form phrases or [“미상”].
 • Key order matches the schema exactly.
-
-Take a deep breath and lets work this out in a step by step way to be sure we have the right answer.
+• ie_type must be exactly one of “i”, “e”, or “i/e”.
