@@ -45,6 +45,22 @@ final class UpstageService {
         print("Check")
         return try await request(dto)
     }
+
+    /// Processes an array of scenes in order, sending each one to Upstage sequentially.
+    @MainActor
+    func processScenesInOrder(_ scenes: [String]) async -> [UpstageResponseDto] {
+        var results: [UpstageResponseDto] = []
+        for (index, scene) in scenes.enumerated() {
+            do {
+                let response = try await requestWithPrompt(userText: scene)
+                results.append(response)
+                print("✅ Scene \(index+1) 완료")
+            } catch {
+                print("❌ Scene \(index+1) 에러: \(error)")
+            }
+        }
+        return results
+    }
 }
 
 enum UpstageRouter: URLRequestConvertible {

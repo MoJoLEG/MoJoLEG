@@ -13,6 +13,7 @@ struct MoJoLEGApp: App {
   var body: some Scene {
     WindowGroup {
       DevView()
+        ChooseScenarioView()
     }
     .modelContainer(
       for: [Scenario.self, Prop.self],
