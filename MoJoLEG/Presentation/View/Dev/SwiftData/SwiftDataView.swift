@@ -19,6 +19,7 @@ struct SwiftDataView: View {
       Button("Add") {
         let scenario = Scenario(
           id: UUID(),
+          title: "테스트",
           scenes: [],
           props: [],
           createdAt: Date(),

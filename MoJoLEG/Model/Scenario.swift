@@ -11,6 +11,7 @@ import SwiftData
 @Model
 class Scenario {
   var id: UUID
+  var title: String
   var scenes: [String]
   var props: [Prop]
   var createdAt: Date
@@ -18,12 +19,14 @@ class Scenario {
 
   init(
     id: UUID,
+    title: String,
     scenes: [String],
     props: [Prop],
     createdAt: Date,
     updatedAt: Date
   ) {
     self.id = id
+    self.title = title
     self.scenes = scenes
     self.props = props
     self.createdAt = createdAt
