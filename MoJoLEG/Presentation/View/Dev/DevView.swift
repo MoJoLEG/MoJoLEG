@@ -9,7 +9,17 @@ import SwiftUI
 
 struct DevView: View {
     var body: some View {
-        Text("Hello, World!")
+        NavigationStack {
+            List {
+                NavigationLink("Upstage") {
+                    UpstageView()
+                }
+                NavigationLink("Extract Text") {
+                    ExtractTextView()
+                }
+            }
+            .navigationTitle("Dev")
+        }
     }
 }
 
