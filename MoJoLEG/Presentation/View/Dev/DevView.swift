@@ -8,24 +8,30 @@
 import SwiftUI
 
 struct DevView: View {
-    var body: some View {
-        NavigationStack {
-            List {
-                NavigationLink("Upstage") {
-                    myView()
-                }
-                NavigationLink("Extract Text") {
-                    ExtractTextView()
-                }
-                NavigationLink("Seperate Scene") {
-                    SeperateSceneView()
-                }
-            }
-            .navigationTitle("Dev")
+  var body: some View {
+    NavigationStack {
+      List {
+        NavigationLink("Upstage") {
+          myView()
         }
+        NavigationLink("Extract Text") {
+          ExtractTextView()
+        }
+        NavigationLink("Seperate Scene") {
+          SeperateSceneView()
+        }
+        NavigationLink("SwiftData") {
+          SwiftDataView()
+        }
+        NavigationLink("ExcelExport") {
+          ExcelExportView()
+        }
+      }
+      .navigationTitle("Dev")
     }
+  }
 }
 
 #Preview {
-    DevView()
+  DevView()
 }
