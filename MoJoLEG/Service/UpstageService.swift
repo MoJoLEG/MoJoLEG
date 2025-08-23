@@ -35,7 +35,6 @@ final class UpstageService {
     }
 
     /// Sends a request where `Prompt.txt` is used as the system prompt and `userText` becomes the user message.
-    @MainActor
     func requestWithPrompt(userText: String) async throws -> UpstageResponseDto {
         let messages: [UpstageMessageRequestDto] = [
             UpstageMessageRequestDto(role: "system", content: loadPromptText()),
@@ -47,7 +46,6 @@ final class UpstageService {
     }
 
     /// Processes an array of scenes in order, sending each one to Upstage sequentially.
-    @MainActor
     func processScenesInOrder(_ scenes: [String]) async -> [UpstageResponseDto] {
         var results: [UpstageResponseDto] = []
         for (index, scene) in scenes.enumerated() {
@@ -60,6 +58,48 @@ final class UpstageService {
             }
         }
         return results
+    }
+
+    /// Processes scenes concurrently in batches, preserving original order.
+    /// - Parameters:
+    ///   - scenes: Array of scene texts.
+    ///   - concurrency: Max number of simultaneous requests (default 8).
+    /// - Returns: Responses in the same order as input (failed ones are skipped).
+    func processScenesConcurrently(_ scenes: [String], concurrency: Int = 15) async -> [UpstageResponseDto] {
+        guard !scenes.isEmpty, concurrency > 0 else { return [] }
+
+        let total = scenes.count
+        var orderedResults: [UpstageResponseDto?] = Array(repeating: nil, count: total)
+
+        // Process in batches of `concurrency` to limit simultaneous requests
+        for start in stride(from: 0, to: total, by: concurrency) {
+            let end = min(start + concurrency, total)
+            await withTaskGroup(of: (Int, UpstageResponseDto?).self) { group in
+                for i in start..<end {
+                    let scene = scenes[i]
+                    group.addTask { [scene] in
+                        do {
+                            let response = try await self.requestWithPrompt(userText: scene)
+                            return (i, response)
+                        } catch {
+                            print("❌ Scene \(i + 1) 에러: \(error)")
+                            return (i, nil)
+                        }
+                    }
+                }
+
+                for await (index, response) in group {
+                    orderedResults[index] = response
+                    if let content = response?.choices.first?.message.content {
+                        print("📥 Scene \(index + 1) 응답: \(content)")
+                    }
+                    print("✅ Scene \(index + 1) 완료 (동시 처리)")
+                }
+            }
+        }
+
+        // Preserve order, drop failures
+        return orderedResults.compactMap { $0 }
     }
 }
 
