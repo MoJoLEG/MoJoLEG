@@ -50,22 +50,26 @@ enum UpstageRouter: URLRequestConvertible {
     }
 }
 
+// MARK: - Request DTO
+
+nonisolated struct UpstageRequestDto: Encodable, Sendable {
+    let model: String
+    let messages: [UpstageMessageRequestDto]
+    let reasoning_effort: String
+
+    init(messages: [UpstageMessageRequestDto]) {
+        self.messages = messages
+        self.model = "solar-pro2"
+        self.reasoning_effort = "high"
+    }
+}
+
 struct UpstageMessageRequestDto: Encodable, Sendable {
     let role: String
     let content: String
 }
 
-nonisolated struct UpstageRequestDto: Encodable, Sendable {
-    let model: String
-    let messages: [UpstageMessageRequestDto]
-    let stream: Bool
-
-    init(messages: [UpstageMessageRequestDto]) {
-        self.messages = messages
-        self.model = "solar-pro2"
-        self.stream = false
-    }
-}
+// MARK: - Response DTO
 
 nonisolated struct UpstageResponseDto: Decodable, Sendable {
     let id: String

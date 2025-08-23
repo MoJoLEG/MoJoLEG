@@ -10,6 +10,7 @@ import SwiftUI
 struct UpstageView: View {
     @State private var prompt: String = ""
     @State private var responses: [UpstageResponseDto] = []
+    @State private var isProcessing: Bool = false
 
     var body: some View {
         VStack {
@@ -31,13 +32,20 @@ struct UpstageView: View {
             HStack {
                 TextField("Prompt", text: $prompt)
                 Button("Request") {
-                    let requestDto = UpstageRequestDto(messages: [
-                        UpstageMessageRequestDto(
-                            role: "user",
-                            content: prompt
-                        )
-                    ])
                     Task {
+                        prompt = ""
+
+                        isProcessing = true
+                        defer {
+                            isProcessing = false
+                        }
+
+                        let requestDto = UpstageRequestDto(messages: [
+                            UpstageMessageRequestDto(
+                                role: "user",
+                                content: prompt
+                            )
+                        ])
                         do {
                             responses.append(
                                 try await UpstageService.shared.request(
@@ -50,6 +58,7 @@ struct UpstageView: View {
                     }
                 }
                 .buttonStyle(.borderedProminent)
+                .disabled(isProcessing)
             }
             .padding()
             .background(
