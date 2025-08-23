@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		327EF41A2E59AE5A00EE7CEA /* Alamofire in Frameworks */ = {isa = PBXBuildFile; productRef = 327EF4192E59AE5A00EE7CEA /* Alamofire */; };
 		327EF4382E59DBEE00EE7CEA /* Lottie in Frameworks */ = {isa = PBXBuildFile; productRef = 327EF4372E59DBEE00EE7CEA /* Lottie */; };
+		E383DEE32E5A1E9E000CBCD5 /* SwiftXLSX in Frameworks */ = {isa = PBXBuildFile; productRef = E383DEE22E5A1E9E000CBCD5 /* SwiftXLSX */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -48,6 +49,7 @@
 			files = (
 				327EF41A2E59AE5A00EE7CEA /* Alamofire in Frameworks */,
 				327EF4382E59DBEE00EE7CEA /* Lottie in Frameworks */,
+				E383DEE32E5A1E9E000CBCD5 /* SwiftXLSX in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -94,6 +96,7 @@
 			packageProductDependencies = (
 				327EF4192E59AE5A00EE7CEA /* Alamofire */,
 				327EF4372E59DBEE00EE7CEA /* Lottie */,
+				E383DEE22E5A1E9E000CBCD5 /* SwiftXLSX */,
 			);
 			productName = MoJoLEG;
 			productReference = E383D6632E58D3B7000CBCD5 /* MoJoLEG.app */;
@@ -126,6 +129,7 @@
 			packageReferences = (
 				327EF4182E59AE5A00EE7CEA /* XCRemoteSwiftPackageReference "Alamofire" */,
 				327EF4362E59DBEE00EE7CEA /* XCRemoteSwiftPackageReference "lottie-ios" */,
+				E383DEE12E5A1E9E000CBCD5 /* XCRemoteSwiftPackageReference "SwiftXLSX" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = E383D6642E58D3B7000CBCD5 /* Products */;
@@ -401,6 +405,14 @@
 				minimumVersion = 4.5.2;
 			};
 		};
+		E383DEE12E5A1E9E000CBCD5 /* XCRemoteSwiftPackageReference "SwiftXLSX" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/3973770/SwiftXLSX.git";
+			requirement = {
+				branch = main;
+				kind = branch;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -413,6 +425,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 327EF4362E59DBEE00EE7CEA /* XCRemoteSwiftPackageReference "lottie-ios" */;
 			productName = Lottie;
+		};
+		E383DEE22E5A1E9E000CBCD5 /* SwiftXLSX */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = E383DEE12E5A1E9E000CBCD5 /* XCRemoteSwiftPackageReference "SwiftXLSX" */;
+			productName = SwiftXLSX;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
