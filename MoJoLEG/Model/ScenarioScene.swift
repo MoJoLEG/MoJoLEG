@@ -22,3 +22,14 @@ class ScenarioScene {
     self.content = content
   }
 }
+
+extension ScenarioScene {
+  func copy() -> ScenarioScene {
+    ScenarioScene(
+      id: UUID(),
+      sceneNumber: sceneNumber,
+      title: title,
+      content: content
+    )
+  }
+}

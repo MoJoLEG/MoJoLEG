@@ -163,16 +163,9 @@ struct ChooseScenarioView: View {
   private func duplicateSelectedScenarios() {
     let targets = scenarios.filter { selectedScenarios.contains($0.id) }
     guard !targets.isEmpty else { return }
-    for s in targets {
-      let copy = Scenario(
-        id: UUID(),
-        title: s.title + " 복사",
-        scenes: s.scenes,
-        props: s.props,
-        isFavorite: s.isFavorite,
-        createdAt: Date(),
-        updatedAt: Date()
-      )
+    for scenario in targets {
+      let copy = scenario.copy()
+      scenario.title = "\(scenario.title) - 복사"
       context.insert(copy)
     }
     do { try context.save() } catch { print("Duplicate save error:", error.localizedDescription) }

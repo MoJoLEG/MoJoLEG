@@ -74,3 +74,18 @@ extension Prop {
     )
   }
 }
+
+extension Prop {
+  func copy() -> Prop {
+    Prop(
+      id: UUID(),
+      isCompleted: isCompleted,
+      sceneNumber: sceneNumber,
+      category: category,
+      name: name,
+      majorLocation: majorLocation,
+      environment: environment,
+      note: note
+    )
+  }
+}

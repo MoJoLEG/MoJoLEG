@@ -50,3 +50,17 @@ extension Scenario {
     )
   }
 }
+
+extension Scenario {
+  func copy() -> Scenario {
+    Scenario(
+      id: UUID(),
+      title: title,
+      scenes: scenes.map { $0.copy() },
+      props: props.map { $0.copy() },
+      isFavorite: isFavorite,
+      createdAt: createdAt,
+      updatedAt: updatedAt
+    )
+  }
+}
