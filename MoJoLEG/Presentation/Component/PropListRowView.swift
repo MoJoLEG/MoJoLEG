@@ -17,52 +17,66 @@ struct PropListRowView: View {
       } label: {
         Image(systemName: prop.isCompleted ? "checkmark.circle.fill" : "circle")
           .foregroundStyle(prop.isCompleted ? .primaryYellow : .gray900)
-          .frame(minWidth: 16)
+          .frame(width: 16)
       }
       Text("\(prop.sceneNumber)")
-        .frame(minWidth: 24)
+        .lineLimit(1)
+        .frame(width: 24)
       Text("\(prop.category.toString)")
-        .frame(minWidth: 54)
+        .lineLimit(1)
+        .frame(width: 54)
         .background(prop.category.toHighlight)
       Text("\(prop.name)")
-        .frame(minWidth: 80)
+        .lineLimit(1)
+        .frame(width: 80)
       Text("\(prop.majorLocation)/\(prop.minorLocation ?? "n/a")")
-        .frame(minWidth: 72)
+        .lineLimit(1)
+        .frame(width: 72)
       Text("\(prop.environment.toString)")
-        .frame(minWidth: 24)
+        .lineLimit(1)
+        .frame(width: 24)
       Text("\(prop.character ?? "")")
-        .frame(minWidth: 96)
+        .lineLimit(1)
+        .frame(width: 96)
       Text("\(prop.note)")
-        .frame(minWidth: 160)
+        .lineLimit(1)
+        .frame(width: 160)
       if let count = prop.count {
         Text("\(count)")
-          .frame(minWidth: 32)
+          .lineLimit(1)
+          .frame(width: 32)
       } else {
         Text("n/a")
-          .frame(minWidth: 32)
+          .lineLimit(1)
+          .frame(width: 32)
       }
       if let price = prop.price {
         Text("\(price)")
-          .frame(minWidth: 96)
+          .lineLimit(1)
+          .frame(width: 96)
       } else {
         Text("n/a")
-          .frame(minWidth: 96)
+          .lineLimit(1)
+          .frame(width: 96)
       }
       if let data = prop.referenceImage, let uiImage = UIImage(data: data) {
         Image(uiImage: uiImage)
           .resizable()
           .scaledToFit()
-          .frame(minWidth: 160)
+          .frame(width: 160)
       } else {
         Text("n/a")
-          .frame(minWidth: 160)
+          .lineLimit(1)
+          .frame(width: 160)
       }
       if let responsibleTeam = prop.responsibleTeam {
         Text("\(responsibleTeam)")
-          .frame(minWidth: 128)
+          .lineLimit(1)
+          .frame(width: 128)
       } else {
         Text("n/a")
-          .frame(minWidth: 128)
+          .lineLimit(1)
+          .frame(width: 128)
       }
     }
     .foregroundStyle(prop.isCompleted ? .gray600 : .gray900)
