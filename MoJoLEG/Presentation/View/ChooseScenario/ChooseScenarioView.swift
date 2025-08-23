@@ -6,15 +6,17 @@
 //
 
 import SwiftUI
+internal import UniformTypeIdentifiers
 
 struct ChooseScenarioView: View {
-  enum ScenarioFilterState {
-    case all
-    case favorite
-  }
-
-  @State private var scenarioFilterState: ScenarioFilterState = .all
-  @State private var isSearchBarPresented: Bool = false
+    enum ScenarioFilterState {
+        case all
+        case favorite
+    }
+    
+    @State private var isFileOpen: Bool = false
+    @State private var scenarioFilterState: ScenarioFilterState = .all
+    @State private var isSearchBarPresented: Bool = false
 
   @Environment(\.editMode) private var editMode
 
@@ -31,13 +33,28 @@ struct ChooseScenarioView: View {
 
         scenarioList
 
-      }
-      .padding(40)
+            }
+            .padding(40)
+        }
+        .toolbar {
+            bottomToolbar
+        }
+        .fileImporter(isPresented: $isFileOpen,
+                      allowedContentTypes: [.pdf])
+        { result in
+            switch result {
+            case .success(let file):
+                guard let url = URL(string: file.absoluteString) else {
+                    print("there's no file")
+                    return
+                }
+                print(url)
+                
+            case .failure(let error):
+                print(error.localizedDescription)
+            }
+        }
     }
-    .toolbar {
-      bottomToolbar
-    }
-  }
 
   private var background: some View {
     Color.gray100
@@ -165,20 +182,20 @@ struct ChooseScenarioView: View {
     }
   }
 
-  private var addScenarioButton: some View {
-    Button {
-
-    } label: {
-      VStack(spacing: 36) {
-        Image(.plusBox)
-          .resizable()
-          .scaledToFit()
-        Text("신규 시나리오")
-          .font(.system(size: 20, weight: .semibold))
-          .foregroundStyle(.primaryYellow)
-      }
+    private var addScenarioButton: some View {
+        Button {
+            isFileOpen.toggle()
+        } label: {
+            VStack(spacing: 36) {
+                Image(.plusBox)
+                    .resizable()
+                    .scaledToFit()
+                Text("신규 시나리오")
+                    .font(.system(size: 20, weight: .semibold))
+                    .foregroundStyle(.primaryYellow)
+            }
+        }
     }
-  }
 
   @ToolbarContentBuilder
   private var bottomToolbar: some ToolbarContent {

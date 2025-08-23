@@ -11,7 +11,7 @@ import Foundation
 import SwiftUI
 
 private func loadPromptText() -> String {
-    guard let url = Bundle.main.url(forResource: "Prompt", withExtension: "txt"),
+    guard let url = Bundle.main.url(forResource: "Prompter", withExtension: "txt"),
           let text = try? String(contentsOf: url, encoding: .utf8) else {
         fatalError("Prompt.txt not found or unreadable")
     }
