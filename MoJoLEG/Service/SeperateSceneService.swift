@@ -25,7 +25,7 @@ final class SeperateSceneService {
       var scenes: [ScenarioScene] = []
       var lastIndex = scenario.startIndex
 
-      for match in matches {
+      for (index, match) in matches.enumerated() {
         let matchRange = Range(match.range, in: scenario)!
 
         if lastIndex < matchRange.lowerBound {
@@ -34,10 +34,23 @@ final class SeperateSceneService {
             scenario[lastIndex..<matchRange.lowerBound]
           ).trimmingCharacters(in: .whitespacesAndNewlines)
           if !content.isEmpty {
+            // Use previous match header as title and extract number
+            var titleLine = ""
+            var number: Int? = nil
+            if index > 0 {
+              let prevMatch = matches[index - 1]
+              let prevRange = Range(prevMatch.range, in: scenario)!
+              titleLine = String(scenario[prevRange]).trimmingCharacters(in: .whitespacesAndNewlines)
+              number = Int(titleLine.filter { $0.isNumber })
+            } else {
+              // No previous match, so no title or number
+              titleLine = ""
+              number = nil
+            }
             let scene = ScenarioScene(
               id: UUID(),
-              sceneNumber: nil,
-              title: "",
+              sceneNumber: number,
+              title: titleLine,
               content: content
             )
             scenes.append(scene)
@@ -52,10 +65,14 @@ final class SeperateSceneService {
         in: .whitespacesAndNewlines
       )
       if !lastScene.isEmpty {
+        // Split first line as title
+        let lines = lastScene.components(separatedBy: .newlines)
+        let titleLine = lines.first ?? ""
+        let number = Int(titleLine.filter { $0.isNumber })
         let scene = ScenarioScene(
           id: UUID(),
-          sceneNumber: nil,
-          title: "",
+          sceneNumber: number,
+          title: titleLine,
           content: lastScene
         )
         scenes.append(scene)

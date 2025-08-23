@@ -14,7 +14,7 @@ struct ExcelExportView: View {
   var body: some View {
     VStack {
       Button("Export") {
-        let url = ExcelService.shared.createExcelFile()
+        let url = ExcelService.shared.createExcelFile(.sample)
 
         selectedFile = url
       }
