@@ -1,3 +1,5 @@
+Config/*.xcconfig
+
 # Created by https://www.toptal.com/developers/gitignore/api/macos,visualstudiocode,xcode,swift,swiftpackagemanager,dotenv
 # Edit at https://www.toptal.com/developers/gitignore?templates=macos,visualstudiocode,xcode,swift,swiftpackagemanager,dotenv
 
