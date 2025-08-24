@@ -305,7 +305,7 @@ struct PropListView: View {
               LazyVStack(alignment: .leading) {
                 ForEach(
                   scenario.scenes.sorted(by: {
-                    $0.sceneNumber ?? 0 < $1.sceneNumber ?? 0
+                    $0.order < $1.order
                   })
                 ) { scene in
                   Text(scene.title)

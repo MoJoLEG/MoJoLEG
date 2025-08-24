@@ -11,12 +11,14 @@ import SwiftData
 @Model
 class ScenarioScene {
   var id: UUID
+  var order: Int
   var sceneNumber: Int?
   var title: String
   var content: String
 
-  init(id: UUID, sceneNumber: Int? = nil, title: String, content: String) {
+  init(id: UUID, order: Int, sceneNumber: Int? = nil, title: String, content: String) {
     self.id = id
+    self.order = order
     self.sceneNumber = sceneNumber
     self.title = title
     self.content = content
@@ -27,6 +29,7 @@ extension ScenarioScene {
   func copy() -> ScenarioScene {
     ScenarioScene(
       id: UUID(),
+      order: order,
       sceneNumber: sceneNumber,
       title: title,
       content: content

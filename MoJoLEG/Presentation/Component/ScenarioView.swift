@@ -14,8 +14,11 @@ struct ScenarioView: View {
   var body: some View {
     ScrollViewReader { proxy in
       ScrollView {
-        LazyVStack(alignment: .leading) {
-          ForEach(scenes, id: \.self) { scene in
+        LazyVStack(alignment: .leading, spacing: 36) {
+          ForEach(
+            scenes.sorted(by: { $0.order < $1.order }),
+            id: \.self
+          ) { scene in
             Text(scene.content)
               .id(scene.id)
               .foregroundStyle(.gray900)

@@ -24,7 +24,8 @@ final class SeperateSceneService {
 
       var scenes: [ScenarioScene] = []
       var lastIndex = scenario.startIndex
-
+      var order: Int = 0
+      
       for (index, match) in matches.enumerated() {
         let matchRange = Range(match.range, in: scenario)!
 
@@ -49,10 +50,12 @@ final class SeperateSceneService {
             }
             let scene = ScenarioScene(
               id: UUID(),
+              order: order,
               sceneNumber: number,
               title: titleLine,
               content: content
             )
+            order += 1
             scenes.append(scene)
           }
         }
@@ -71,6 +74,7 @@ final class SeperateSceneService {
         let number = Int(titleLine.filter { $0.isNumber })
         let scene = ScenarioScene(
           id: UUID(),
+          order: order,
           sceneNumber: number,
           title: titleLine,
           content: lastScene
