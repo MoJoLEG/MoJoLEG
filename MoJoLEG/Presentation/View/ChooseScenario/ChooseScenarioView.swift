@@ -384,31 +384,31 @@ struct ChooseScenarioView: View {
     if editMode?.wrappedValue == .active {
       ToolbarItem(placement: .bottomBar) {
         HStack {
-          // Left - 공유
-          ShareLink(
-            items: {
-              let targets = scenarios.filter({
-                selectedScenarios.contains($0.id)
-              })
-              return targets.map({
-                ExcelService.shared.createExcelFile($0)
-              })
-            }()
-          )
-          .labelStyle(.titleOnly)
-          .foregroundStyle(.primaryYellow)
-          .disabled(selectedScenarios.isEmpty)
+            // Left - 복제
+            Button {
+              duplicateSelectedScenarios()
+            } label: {
+              Text("복제")
+                .foregroundStyle(.primaryYellow)
+            }
+            .disabled(selectedScenarios.isEmpty)
 
           Spacer()
-
-          // Center - 복제
-          Button {
-            duplicateSelectedScenarios()
-          } label: {
-            Text("복제")
-              .foregroundStyle(.primaryYellow)
-          }
-          .disabled(selectedScenarios.isEmpty)
+            
+            // Center - 공유
+            ShareLink(
+              items: {
+                let targets = scenarios.filter({
+                  selectedScenarios.contains($0.id)
+                })
+                return targets.map({
+                  ExcelService.shared.createExcelFile($0)
+                })
+              }()
+            )
+            .labelStyle(.titleOnly)
+            .foregroundStyle(.primaryYellow)
+            .disabled(selectedScenarios.isEmpty)
 
           Spacer()
 
