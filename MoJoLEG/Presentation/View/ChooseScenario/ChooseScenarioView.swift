@@ -159,7 +159,7 @@ struct ChooseScenarioView: View {
 
         allProps.append(contentsOf: props)
       } catch {
-        self.error = "Failed to decode prop: \( error.localizedDescription)"
+        print("Failed to decode prop: \( error.localizedDescription)")
       }
     }
 
@@ -184,7 +184,7 @@ struct ChooseScenarioView: View {
     do {
       try context.save()
     } catch {
-      self.error = "Failed to save data: \( error.localizedDescription)"
+      print("Failed to save data: \( error.localizedDescription)")
     }
 
     selectedScenario = scenario
