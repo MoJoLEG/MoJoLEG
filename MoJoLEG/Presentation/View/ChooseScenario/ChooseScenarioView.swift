@@ -27,6 +27,8 @@ struct ChooseScenarioView: View {
   private var scenarios: [Scenario]
 
   @State private var selectedScenario: Scenario? = nil
+  @State private var importFileTask: Task<Void, Never>? = nil
+  @State private var error: String? = nil
 
   @Environment(\.editMode) private var editMode
 
@@ -43,7 +45,9 @@ struct ChooseScenarioView: View {
     if searchText.isEmpty {
       return base
     } else {
-      return base.filter { $0.title.localizedCaseInsensitiveContains(searchText) }
+      return base.filter {
+        $0.title.localizedCaseInsensitiveContains(searchText)
+      }
     }
   }
 
@@ -64,6 +68,10 @@ struct ChooseScenarioView: View {
         if isLoadingViewPresented {
           LoadingView()
             .ignoresSafeArea()
+            .onTapGesture(count: 3) {
+              importFileTask?.cancel()
+              importFileTask = nil
+            }
         }
       }
       .navigationDestination(item: $selectedScenario) { scenario in
@@ -78,14 +86,26 @@ struct ChooseScenarioView: View {
       ) { result in
         switch result {
         case .success(let url):
-          Task {
+          importFileTask = Task {
             guard url.startAccessingSecurityScopedResource() else { return }
-            defer { url.stopAccessingSecurityScopedResource() }
+            defer {
+              url.stopAccessingSecurityScopedResource()
+              importFileTask = nil
+            }
 
             await loadScenario(url)
           }
         case .failure(let error):
           print(error.localizedDescription)
+        }
+      }
+      .alert("Error", isPresented: Binding(get: {
+        error != nil
+      }, set: { _,_ in
+        error = nil
+      })) {} message: {
+        if let error {
+          Text(error)
         }
       }
     }
@@ -128,7 +148,7 @@ struct ChooseScenarioView: View {
     }
 
     guard !contents.isEmpty else {
-      print("Failed to analyze scenes")
+      error = "Failed to analyze scenes"
       return
     }
 
@@ -139,7 +159,7 @@ struct ChooseScenarioView: View {
 
         allProps.append(contentsOf: props)
       } catch {
-        print("Failed to decode prop:", error.localizedDescription)
+        self.error = "Failed to decode prop: \( error.localizedDescription)"
       }
     }
 
@@ -164,8 +184,10 @@ struct ChooseScenarioView: View {
     do {
       try context.save()
     } catch {
-      print("Failed to save data:", error.localizedDescription)
+      self.error = "Failed to save data: \( error.localizedDescription)"
     }
+
+    selectedScenario = scenario
   }
 
   private func duplicateSelectedScenarios() {
@@ -177,7 +199,7 @@ struct ChooseScenarioView: View {
       context.insert(copy)
     }
     do { try context.save() } catch {
-      print("Duplicate save error:", error.localizedDescription)
+      self.error = "Duplicate save error: \( error.localizedDescription)"
     }
     selectedScenarios.removeAll()
   }
@@ -187,7 +209,7 @@ struct ChooseScenarioView: View {
     guard !targets.isEmpty else { return }
     for t in targets { context.delete(t) }
     do { try context.save() } catch {
-      print("Delete save error:", error.localizedDescription)
+      self.error = "Delete save error: \( error.localizedDescription)"
     }
     selectedScenarios.removeAll()
   }
@@ -264,23 +286,23 @@ struct ChooseScenarioView: View {
   }
 
   private var selectButton: some View {
-      HStack{
-          if editMode?.wrappedValue == .active {
-              Button("전체 선택") {
-                  selectedScenarios = Set(filteredScenarios.map { $0.id })
-              }
-              .padding(.trailing, 20)
-          }
-          Button(editMode?.wrappedValue == .active ? "완료" : "선택") {
-              if editMode?.wrappedValue == .active {
-                  editMode?.wrappedValue = .inactive
-                  selectedScenarios.removeAll()
-              } else {
-                  editMode?.wrappedValue = .active
-              }
-          }
-          .padding(.trailing, 20)
+    HStack {
+      if editMode?.wrappedValue == .active {
+        Button("전체 선택") {
+          selectedScenarios = Set(filteredScenarios.map { $0.id })
+        }
+        .padding(.trailing, 20)
       }
+      Button(editMode?.wrappedValue == .active ? "완료" : "선택") {
+        if editMode?.wrappedValue == .active {
+          editMode?.wrappedValue = .inactive
+          selectedScenarios.removeAll()
+        } else {
+          editMode?.wrappedValue = .active
+        }
+      }
+      .padding(.trailing, 20)
+    }
   }
 
   private var searchBar: some View {
@@ -398,31 +420,31 @@ struct ChooseScenarioView: View {
     if editMode?.wrappedValue == .active {
       ToolbarItem(placement: .bottomBar) {
         HStack {
-            // Left - 복제
-            Button {
-              duplicateSelectedScenarios()
-            } label: {
-              Text("복제")
-                .foregroundStyle(.primaryYellow)
-            }
-            .disabled(selectedScenarios.isEmpty)
+          // Left - 복제
+          Button {
+            duplicateSelectedScenarios()
+          } label: {
+            Text("복제")
+              .foregroundStyle(.primaryYellow)
+          }
+          .disabled(selectedScenarios.isEmpty)
 
           Spacer()
-            
-            // Center - 공유
-            ShareLink(
-              items: {
-                let targets = scenarios.filter({
-                  selectedScenarios.contains($0.id)
-                })
-                return targets.map({
-                  ExcelService.shared.createExcelFile($0)
-                })
-              }()
-            )
-            .labelStyle(.titleOnly)
-            .foregroundStyle(.primaryYellow)
-            .disabled(selectedScenarios.isEmpty)
+
+          // Center - 공유
+          ShareLink(
+            items: {
+              let targets = scenarios.filter({
+                selectedScenarios.contains($0.id)
+              })
+              return targets.map({
+                ExcelService.shared.createExcelFile($0)
+              })
+            }()
+          )
+          .labelStyle(.titleOnly)
+          .foregroundStyle(.primaryYellow)
+          .disabled(selectedScenarios.isEmpty)
 
           Spacer()
 
