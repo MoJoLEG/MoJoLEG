@@ -249,11 +249,12 @@
       }
     },
     "소품리스트 모음" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Film Material"
+            "value" : "Film Materials"
           }
         }
       }
@@ -296,6 +297,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Props are organized by the system on a per-scene basis."
+          }
+        }
+      }
+    },
+    "영화 선재" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Film Materials"
           }
         }
       }

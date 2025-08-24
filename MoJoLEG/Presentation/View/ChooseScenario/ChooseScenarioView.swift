@@ -199,7 +199,7 @@ struct ChooseScenarioView: View {
 
   private var navigationTitle: some View {
     HStack {
-      Text("소품리스트 모음")
+      Text("영화 선재")
         .font(.system(size: 40, weight: .semibold))
         .foregroundStyle(.gray900)
       Spacer()
