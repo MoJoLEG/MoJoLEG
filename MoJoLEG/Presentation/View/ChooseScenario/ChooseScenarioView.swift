@@ -20,6 +20,7 @@ struct ChooseScenarioView: View {
   @State private var isSearchBarPresented: Bool = false
   @State private var isLoadingViewPresented: Bool = false
   @State private var selectedScenarios: Set<UUID> = []
+  @State private var searchText: String = ""
 
   @Environment(\.modelContext) private var context
   @Query(sort: \Scenario.updatedAt, order: .forward)
@@ -32,11 +33,17 @@ struct ChooseScenarioView: View {
   @Namespace private var namespace
 
   private var filteredScenarios: [Scenario] {
+    let base: [Scenario]
     switch scenarioFilterState {
     case .all:
-      return scenarios
+      base = scenarios
     case .favorite:
-      return scenarios.filter { $0.isFavorite }
+      base = scenarios.filter { $0.isFavorite }
+    }
+    if searchText.isEmpty {
+      return base
+    } else {
+      return base.filter { $0.title.localizedCaseInsensitiveContains(searchText) }
     }
   }
 
@@ -280,9 +287,15 @@ struct ChooseScenarioView: View {
     HStack {
       Image(systemName: "magnifyingglass")
         .foregroundStyle(.gray400)
-      TextField("검색", text: .constant(""))
-      Image(systemName: "xmark.circle.fill")
-        .foregroundStyle(.gray400)
+      TextField("검색", text: $searchText)
+      if !searchText.isEmpty {
+        Button {
+          searchText = ""
+        } label: {
+          Image(systemName: "xmark.circle.fill")
+            .foregroundStyle(.gray400)
+        }
+      }
     }
     .padding(7)
     .frame(maxWidth: 300)
