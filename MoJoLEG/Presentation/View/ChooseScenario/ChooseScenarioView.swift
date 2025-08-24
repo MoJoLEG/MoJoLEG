@@ -85,6 +85,7 @@ struct ChooseScenarioView: View {
   }
 
   private func loadScenario(_ url: URL) async {
+    editMode?.wrappedValue = .inactive
     isLoadingViewPresented = true
 
     defer {
