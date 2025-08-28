@@ -425,7 +425,7 @@ struct ChooseScenarioView: View {
             duplicateSelectedScenarios()
           } label: {
             Text("복제")
-              .foregroundStyle(.primaryYellow)
+                  .foregroundStyle(selectedScenarios.count > 0 ? .primaryYellow : .gray600)
           }
           .disabled(selectedScenarios.isEmpty)
 
@@ -440,10 +440,12 @@ struct ChooseScenarioView: View {
               return targets.map({
                 ExcelService.shared.createExcelFile($0)
               })
-            }()
-          )
+            }())
+            {
+                Label("공유", systemImage: "circle.fill")
+            }
           .labelStyle(.titleOnly)
-          .foregroundStyle(.primaryYellow)
+          .foregroundStyle(selectedScenarios.count > 0 ? .primaryYellow : .gray600)
           .disabled(selectedScenarios.isEmpty)
 
           Spacer()
@@ -452,8 +454,8 @@ struct ChooseScenarioView: View {
           Button(role: .destructive) {
             deleteSelectedScenarios()
           } label: {
-            Text("삭제")
-              .foregroundStyle(.primaryYellow)
+              Text("삭제")
+              .foregroundStyle(selectedScenarios.count > 0 ? .primaryYellow : .gray600)
           }
           .disabled(selectedScenarios.isEmpty)
         }
