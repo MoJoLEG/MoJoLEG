@@ -7,24 +7,11 @@
 
 import Alamofire
 import Foundation
-import SwiftUI
 
 final class UpstageService {
   static let shared = UpstageService()
 
   private init() {}
-
-  private let prompt: String = {
-    guard
-      let url = Bundle.main.url(forResource: "Prompter", withExtension: "txt"),
-      let text = try? String(contentsOf: url, encoding: .utf8)
-    else {
-      print("Failed to load prompt")
-      return ""
-    }
-    print("Successfully loaded prompt")
-    return text
-  }()
 
   func request(_ upstageRequestDto: UpstageRequestDto) async throws
     -> UpstageResponseDto
@@ -35,60 +22,6 @@ final class UpstageService {
       .validate()
       .serializingDecodable(UpstageResponseDto.self)
       .value
-  }
-
-  /// Sends a request where `Prompt.txt` is used as the system prompt and `userText` becomes the user message.
-  @MainActor
-  func requestWithPrompt(userText: String) async throws -> UpstageResponseDto {
-    let messages: [UpstageMessageRequestDto] = [
-      UpstageMessageRequestDto(role: "system", content: prompt),
-      UpstageMessageRequestDto(role: "user", content: userText),
-    ]
-    let dto = UpstageRequestDto(messages: messages)
-    return try await request(dto)
-  }
-
-  /// Processes an array of scenes in order, sending each one to Upstage sequentially.
-  @MainActor
-  func processScenesInOrder(_ scenes: [String]) async -> [UpstageResponseDto] {
-    var results: [UpstageResponseDto] = []
-    for (index, scene) in scenes.enumerated() {
-      do {
-        let response = try await requestWithPrompt(userText: scene)
-        results.append(response)
-        print("✅ Scene \(index+1) 완료")
-      } catch {
-        print("❌ Scene \(index+1) 에러: \(error)")
-      }
-    }
-    return results
-  }
-
-  @MainActor
-  func processScenesInParallel(_ scenes: [String]) async -> [UpstageResponseDto]
-  {
-    await withTaskGroup { group in
-      for (index, scene) in scenes.enumerated() {
-        group.addTask { () -> UpstageResponseDto? in
-          do {
-            let response = try await self.requestWithPrompt(userText: scene)
-            print("Successfully finished scene \(index + 1)")
-            return response
-          } catch {
-            print("Failed to process scene \(index + 1): \(error.localizedDescription)")
-          }
-          return nil
-        }
-      }
-
-      var result: [UpstageResponseDto] = []
-      for await response in group {
-        if let response {
-          result.append(response)
-        }
-      }
-      return result
-    }
   }
 }
 
@@ -121,12 +54,47 @@ enum UpstageRouter: URLRequestConvertible {
 nonisolated struct UpstageRequestDto: Encodable, Sendable {
   let model: String
   let messages: [UpstageMessageRequestDto]
-  let reasoning_effort: String
+  let reasoningEffort: String
+  let responseFormat: String?
 
-  init(messages: [UpstageMessageRequestDto]) {
+  enum CodingKeys: String, CodingKey {
+    case model
+    case messages
+    case reasoningEffort = "reasoning_effort"
+    case responseFormat = "response_format"
+  }
+
+  init(
+    model: String = "solar-pro2",
+    messages: [UpstageMessageRequestDto],
+    reasoningEffort: String = "high",
+    responseFormat: String? = nil
+  ) {
+    self.model = model
     self.messages = messages
-    self.model = "solar-pro2"
-    self.reasoning_effort = "high"
+    self.reasoningEffort = reasoningEffort
+    self.responseFormat = responseFormat
+  }
+
+  nonisolated func encode(to encoder: Encoder) throws {
+    var container = encoder.container(keyedBy: CodingKeys.self)
+    try container.encode(model, forKey: .model)
+    try container.encode(messages, forKey: .messages)
+    try container.encode(reasoningEffort, forKey: .reasoningEffort)
+
+    if let responseFormat {
+      if let data = responseFormat.data(using: .utf8),
+        let jsonObject = try? JSONSerialization.jsonObject(with: data),
+        JSONSerialization.isValidJSONObject(jsonObject)
+      {
+        try container.encode(
+          AnyCodable(value: jsonObject),
+          forKey: .responseFormat
+        )
+      } else {
+        try container.encode(responseFormat, forKey: .responseFormat)
+      }
+    }
   }
 }
 
@@ -163,4 +131,60 @@ struct UpstageUsageResponseData: Decodable, Sendable {
   let prompt_tokens: Int
   let completion_tokens: Int
   let total_tokens: Int
+}
+
+// MARK: - AnyCodable
+
+nonisolated struct AnyCodable: Codable {
+  let value: Any
+
+  init(from decoder: Decoder) throws {
+    let container = try decoder.singleValueContainer()
+
+    if let string = try? container.decode(String.self) {
+      value = string
+    } else if let int = try? container.decode(Int.self) {
+      value = int
+    } else if let double = try? container.decode(Double.self) {
+      value = double
+    } else if let bool = try? container.decode(Bool.self) {
+      value = bool
+    } else if let array = try? container.decode([AnyCodable].self) {
+      value = array.map { $0.value }  // AnyCodable 배열을 Any 배열로 변환
+    } else if let dict = try? container.decode([String: AnyCodable].self) {
+      value = dict.mapValues { $0.value }  // AnyCodable 딕셔너리를 Any 딕셔너리로 변환
+    } else {
+      value = NSNull()
+    }
+  }
+
+  func encode(to encoder: Encoder) throws {
+    var container = encoder.singleValueContainer()
+
+    switch value {
+    case let string as String:
+      try container.encode(string)
+    case let int as Int:
+      try container.encode(int)
+    case let double as Double:
+      try container.encode(double)
+    case let bool as Bool:
+      try container.encode(bool)
+    case let array as [Any]:
+      // [Any]를 [AnyCodable]로 변환
+      let codableArray = array.map { AnyCodable(value: $0) }
+      try container.encode(codableArray)
+    case let dict as [String: Any]:
+      // [String: Any]를 [String: AnyCodable]로 변환
+      let codableDict = dict.mapValues { AnyCodable(value: $0) }
+      try container.encode(codableDict)
+    default:
+      try container.encodeNil()
+    }
+  }
+
+  // 편의 초기화
+  init(value: Any) {
+    self.value = value
+  }
 }
