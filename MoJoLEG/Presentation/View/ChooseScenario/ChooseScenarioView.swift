@@ -23,7 +23,7 @@ struct ChooseScenarioView: View {
   @State private var searchText: String = ""
 
   @Environment(\.modelContext) private var context
-  @Query(sort: \Scenario.updatedAt, order: .forward)
+  @Query(sort: \Scenario.updatedAt, order: .reverse)
   private var scenarios: [Scenario]
 
   @State private var selectedScenario: Scenario? = nil
@@ -99,11 +99,18 @@ struct ChooseScenarioView: View {
           print(error.localizedDescription)
         }
       }
-      .alert("Error", isPresented: Binding(get: {
-        error != nil
-      }, set: { _,_ in
-        error = nil
-      })) {} message: {
+      .alert(
+        "Error",
+        isPresented: Binding(
+          get: {
+            error != nil
+          },
+          set: { _, _ in
+            error = nil
+          }
+        )
+      ) {
+      } message: {
         if let error {
           Text(error)
         }
@@ -141,25 +148,58 @@ struct ChooseScenarioView: View {
     }
 
     /// 3. Upstage에 씬 분석 요청
-    let responses = await UpstageService.shared
-      .processScenesInParallel(separated.map { $0.content })
-    let contents = responses.compactMap {
-      $0.choices.first?.message.content
+    let responses = await withTaskGroup { group in
+      for (index, scene) in separated.enumerated() {
+        group.addTask { () -> UpstageResponseDto? in
+          do {
+            let request: UpstageRequestDto = await UpstageRequestDto(
+              messages: [
+                UpstageMessageRequestDto(
+                  role: "system",
+                  content: Prompt.default
+                ),
+                UpstageMessageRequestDto(role: "user", content: scene.content),
+              ],
+              responseFormat: ResponseFormat.default
+            )
+
+            let response: UpstageResponseDto = try await UpstageService.shared
+              .request(request)
+            print("Successfully finished processing scene \(index + 1)")
+
+            return response
+          } catch {
+            print(
+              "Failed to process scene \(index + 1): \(error.localizedDescription)"
+            )
+          }
+          return nil
+        }
+      }
+
+      var result: [UpstageResponseDto] = []
+      for await response in group {
+        if let response {
+          result.append(response)
+        }
+      }
+      return result
     }
 
-    guard !contents.isEmpty else {
-      error = "Failed to analyze scenes"
-      return
-    }
-
+    /// 4. 분석한 씬에서 소품 추출
     var allProps: [Prop] = []
-    for content in contents {
+
+    for response in responses {
       do {
+        guard let content = response.choices.first?.message.content else {
+          continue
+        }
+
         let props = try PropDecodeService.shared.decode(content)
 
         allProps.append(contentsOf: props)
       } catch {
-        print("Failed to decode prop: \( error.localizedDescription)")
+        print("Failed to decode prop: \(error.localizedDescription)")
       }
     }
 
