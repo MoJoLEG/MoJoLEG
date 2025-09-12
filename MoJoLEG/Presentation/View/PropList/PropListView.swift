@@ -5,6 +5,7 @@
 //  Created by 정희균 on 8/23/25.
 //
 
+import PDFKit
 import SwiftUI
 
 struct PropListView: View {
@@ -23,6 +24,8 @@ struct PropListView: View {
       }
       .sorted(by: { $0.sceneNumber < $1.sceneNumber })
   }
+
+  @State private var pdfDocument: PDFDocument? = nil
 
   @State private var isScenarioPresented: Bool = false
   @State private var isSidebarPresented: Bool = false
@@ -67,12 +70,23 @@ struct PropListView: View {
           } else {
             propGallery
           }
-          
+
           scenarioViewer
         }
       }
 
       sidebar
+    }
+    .task {
+      if self.pdfDocument == nil {
+        guard let pdfFile = scenario.pdfFile else { return }
+
+        self.pdfDocument = PDFDocument(data: pdfFile)
+      }
+
+      guard let pdfDocument else { return }
+
+      PDFService.shared.highlightScenario(in: pdfDocument, scenario: scenario)
     }
   }
 
@@ -203,6 +217,7 @@ struct PropListView: View {
     }
     .scrollPosition($scrollPosition, anchor: .topLeading)
     .defaultScrollAnchor(.topLeading)
+    .animation(.default, value: scrollPosition)
     .onAppear {
       UIScrollView.appearance().isDirectionalLockEnabled = true
     }
@@ -257,7 +272,7 @@ struct PropListView: View {
     .frame(minWidth: 1280)
     .background(.white, in: RoundedRectangle(cornerRadius: 12))
   }
-  
+
   private var propGallery: some View {
     GalleryView(props: filteredProps)
   }
@@ -267,9 +282,45 @@ struct PropListView: View {
       Spacer()
 
       if isScenarioPresented {
-        ScenarioView(scenes: scenario.scenes, selectedScene: $selectedScene)
+        if let pdfDocument {
+          PDFKitView(pdfDocument: pdfDocument, selectedScene: selectedScene) {
+            annotation in
+            guard let page = annotation.page else {
+              print("Failed to find annotation page")
+              return
+            }
+
+            guard let selection = page.selection(for: annotation.bounds) else {
+              print("Failed to select annotation")
+              return
+            }
+
+            guard
+              let target = filteredProps.first(where: {
+                $0.originalText == selection.string
+              })
+            else {
+              print(
+                "Failed to find prop with name: \(String(describing: selection.string))"
+              )
+              return
+            }
+
+            scrollTo(prop: target)
+          }
+          .padding(32)
+          .background {
+            RoundedRectangle(cornerRadius: 24)
+              .fill(.white)
+              .shadow(color: .black.opacity(0.25), radius: 20, x: 4, y: 4)
+          }
           .frame(maxWidth: 540)
           .transition(.move(edge: .trailing).combined(with: .opacity))
+        } else {
+          ScenarioView(scenes: scenario.scenes, selectedScene: $selectedScene)
+            .frame(maxWidth: 540)
+            .transition(.move(edge: .trailing).combined(with: .opacity))
+        }
       }
     }
     .padding(.trailing, 36)
@@ -325,28 +376,7 @@ struct PropListView: View {
                         isSidebarPresented = false
                       }
 
-                      guard
-                        let targetIndex = filteredProps.firstIndex(where: {
-                          $0.sceneNumber == scene.sceneNumber
-                        })
-                      else { return }
-
-                      let previousTargetIndex = targetIndex - 1
-
-                      if filteredProps.indices.contains(previousTargetIndex) {
-                        let previousTarget = filteredProps[previousTargetIndex]
-
-                        withAnimation {
-                          scrollPosition.scrollTo(
-                            id: previousTarget.id,
-                            anchor: .topLeading
-                          )
-                        }
-                      } else {
-                        withAnimation {
-                          scrollPosition.scrollTo(point: .zero)
-                        }
-                      }
+                      scrollTo(scene: scene)
                     }
                 }
               }
@@ -369,6 +399,38 @@ struct PropListView: View {
 
     }
     .animation(.default, value: isSidebarPresented)
+  }
+
+  private func scrollTo(scene: ScenarioScene) {
+    guard
+      let firstSceneProp = filteredProps.first(where: {
+        $0.sceneNumber == scene.sceneNumber
+      })
+    else {
+      print(
+        "Failed to find first prop for scene: \(String(describing: scene.sceneNumber))"
+      )
+      return
+    }
+
+    scrollTo(prop: firstSceneProp)
+  }
+
+  private func scrollTo(prop: Prop) {
+    guard let index = filteredProps.firstIndex(of: prop) else {
+      print("Failed to find index for prop: \(prop.name)")
+      return
+    }
+
+    let previousIndex = index - 1
+
+    if previousIndex < 0 {
+      scrollPosition.scrollTo(point: .zero)
+    } else if filteredProps.indices.contains(previousIndex) {
+      let previousTarget = filteredProps[previousIndex]
+
+      scrollPosition.scrollTo(id: previousTarget.id)
+    }
   }
 }
 

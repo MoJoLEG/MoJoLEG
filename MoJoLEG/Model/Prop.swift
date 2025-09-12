@@ -24,6 +24,7 @@ class Prop {
   var price: Double?
   var referenceImage: Data?
   var responsibleTeam: String?
+  var originalText: String
 
   init(
     id: UUID,
@@ -39,7 +40,8 @@ class Prop {
     count: Int? = nil,
     price: Double? = nil,
     referenceImage: Data? = nil,
-    responsibleTeam: String? = nil
+    responsibleTeam: String? = nil,
+    originalText: String
   ) {
     self.id = id
     self.isCompleted = isCompleted
@@ -55,6 +57,7 @@ class Prop {
     self.price = price
     self.referenceImage = referenceImage
     self.responsibleTeam = responsibleTeam
+    self.originalText = originalText
   }
 }
 
@@ -70,7 +73,8 @@ extension Prop {
       minorLocation: "방",
       environment: .interior,
       character: "상훈",
-      note: "낡은 창고"
+      note: "낡은 창고",
+      originalText: "책상"
     )
   }
 }
@@ -84,8 +88,15 @@ extension Prop {
       category: category,
       name: name,
       majorLocation: majorLocation,
+      minorLocation: minorLocation,
       environment: environment,
-      note: note
+      character: character,
+      note: note,
+      count: count,
+      price: price,
+      referenceImage: referenceImage,
+      responsibleTeam: responsibleTeam,
+      originalText: originalText
     )
   }
 }

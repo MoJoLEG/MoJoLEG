@@ -208,6 +208,8 @@ struct ChooseScenarioView: View {
     if let firstLine = lines.first, !firstLine.isEmpty {
       title = firstLine
     }
+    
+    let pdfFile = try? Data(contentsOf: url)
 
     let scenario = Scenario(
       id: UUID(),
@@ -216,7 +218,8 @@ struct ChooseScenarioView: View {
       props: allProps,
       isFavorite: false,
       createdAt: Date(),
-      updatedAt: Date()
+      updatedAt: Date(),
+      pdfFile: pdfFile
     )
 
     context.insert(scenario)
