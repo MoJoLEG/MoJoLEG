@@ -26,6 +26,9 @@ struct DevView: View {
         NavigationLink("ExcelExport") {
           ExcelExportView()
         }
+        NavigationLink("Import PDF") {
+          ImportPDFView()
+        }
       }
       .navigationTitle("Dev")
     }
