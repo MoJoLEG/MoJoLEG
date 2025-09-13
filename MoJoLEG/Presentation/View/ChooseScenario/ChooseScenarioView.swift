@@ -35,20 +35,19 @@ struct ChooseScenarioView: View {
   @Namespace private var namespace
 
   private var filteredScenarios: [Scenario] {
-    let base: [Scenario]
-    switch scenarioFilterState {
-    case .all:
-      base = scenarios
-    case .favorite:
-      base = scenarios.filter { $0.isFavorite }
+    scenarios.filter {
+      matchesFavorite($0)
+        && matchesSearch($0)
     }
-    if searchText.isEmpty {
-      return base
-    } else {
-      return base.filter {
-        $0.title.localizedCaseInsensitiveContains(searchText)
-      }
-    }
+  }
+
+  private func matchesFavorite(_ scenario: Scenario) -> Bool {
+    scenarioFilterState == .all || scenario.isFavorite
+  }
+
+  private func matchesSearch(_ scenario: Scenario) -> Bool {
+    !isSearchBarPresented || searchText.isEmpty
+      || scenario.title.localizedCaseInsensitiveContains(searchText)
   }
 
   var body: some View {
@@ -57,13 +56,15 @@ struct ChooseScenarioView: View {
         background
 
         VStack {
-          navigationTitle
+          VStack(spacing: 24) {
+            navigationTitle
 
-          topToolbar
+            topToolbar
+          }
+          .padding([.top, .horizontal], 40)
 
           scenarioList
         }
-        .padding(40)
 
         if isLoadingViewPresented {
           LoadingView()
@@ -75,7 +76,7 @@ struct ChooseScenarioView: View {
         }
       }
       .navigationDestination(item: $selectedScenario) { scenario in
-        PropListView(scenario: scenario)
+        ScenarioPropsView(scenario: scenario)
       }
       .toolbar {
         bottomToolbar
@@ -208,7 +209,7 @@ struct ChooseScenarioView: View {
     if let firstLine = lines.first, !firstLine.isEmpty {
       title = firstLine
     }
-    
+
     let pdfFile = try? Data(contentsOf: url)
 
     let scenario = Scenario(
@@ -269,7 +270,6 @@ struct ChooseScenarioView: View {
         .foregroundStyle(.gray900)
       Spacer()
     }
-    .padding(.bottom, 24)
   }
 
   private var topToolbar: some View {
@@ -288,13 +288,14 @@ struct ChooseScenarioView: View {
         searchButton
       }
     }
-    .padding(.bottom, 48)
   }
 
   private var scenarioFilter: some View {
     HStack {
       Button {
-        scenarioFilterState = .all
+        withAnimation {
+          scenarioFilterState = .all
+        }
       } label: {
         Text("전체보기")
           .foregroundStyle(scenarioFilterState == .all ? .white : .gray900)
@@ -305,11 +306,14 @@ struct ChooseScenarioView: View {
               Capsule()
                 .fill(.primaryYellow)
                 .matchedGeometryEffect(id: "LayoutBackground", in: namespace)
+                .shadow(color: .black.opacity(0.1), radius: 4, y: 2)
             }
           }
       }
       Button {
-        scenarioFilterState = .favorite
+        withAnimation {
+          scenarioFilterState = .favorite
+        }
       } label: {
         Text("즐겨찾기")
           .foregroundStyle(scenarioFilterState == .favorite ? .white : .gray900)
@@ -320,6 +324,7 @@ struct ChooseScenarioView: View {
               Capsule()
                 .fill(.primaryYellow)
                 .matchedGeometryEffect(id: "LayoutBackground", in: namespace)
+                .shadow(color: .black.opacity(0.1), radius: 4, y: 2)
             }
           }
       }
@@ -440,6 +445,18 @@ struct ChooseScenarioView: View {
         }
       }
     }
+    .safeAreaPadding(40)
+    .overlay(alignment: .top) {
+      VariableBlurView(maxBlurRadius: 8)
+        .frame(height: 40)
+
+      LinearGradient(
+        colors: [Color.gray100, Color.clear],
+        startPoint: .top,
+        endPoint: .bottom
+      )
+      .frame(height: 40)
+    }
   }
 
   private var addScenarioButton: some View {
@@ -468,7 +485,9 @@ struct ChooseScenarioView: View {
             duplicateSelectedScenarios()
           } label: {
             Text("복제")
-                  .foregroundStyle(selectedScenarios.count > 0 ? .primaryYellow : .gray600)
+              .foregroundStyle(
+                selectedScenarios.count > 0 ? .primaryYellow : .gray600
+              )
           }
           .disabled(selectedScenarios.isEmpty)
 
@@ -483,12 +502,14 @@ struct ChooseScenarioView: View {
               return targets.map({
                 ExcelService.shared.createExcelFile($0)
               })
-            }())
-            {
-                Label("공유", systemImage: "circle.fill")
-            }
+            }()
+          ) {
+            Label("공유", systemImage: "circle.fill")
+          }
           .labelStyle(.titleOnly)
-          .foregroundStyle(selectedScenarios.count > 0 ? .primaryYellow : .gray600)
+          .foregroundStyle(
+            selectedScenarios.count > 0 ? .primaryYellow : .gray600
+          )
           .disabled(selectedScenarios.isEmpty)
 
           Spacer()
@@ -497,8 +518,10 @@ struct ChooseScenarioView: View {
           Button(role: .destructive) {
             deleteSelectedScenarios()
           } label: {
-              Text("삭제")
-              .foregroundStyle(selectedScenarios.count > 0 ? .primaryYellow : .gray600)
+            Text("삭제")
+              .foregroundStyle(
+                selectedScenarios.count > 0 ? .primaryYellow : .gray600
+              )
           }
           .disabled(selectedScenarios.isEmpty)
         }
