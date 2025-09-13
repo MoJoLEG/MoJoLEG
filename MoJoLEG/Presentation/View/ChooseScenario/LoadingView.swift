@@ -9,7 +9,35 @@ import Lottie
 import SwiftUI
 
 struct LoadingView: View {
-  @State private var currentIndex: Int = 0
+  private enum LoadingText {
+    case first
+    case second
+    case third
+
+    var toString: String {
+      switch self {
+      case .first:
+        String(localized: .loadingText1)
+      case .second:
+        String(localized: .loadingText2)
+      case .third:
+        String(localized: .loadingText3)
+      }
+    }
+
+    var next: LoadingText {
+      switch self {
+      case .first:
+        .second
+      case .second:
+        .third
+      case .third:
+        .first
+      }
+    }
+  }
+
+  @State private var loadingText: LoadingText = .first
   @State private var isShowingText: Bool = true
 
   var body: some View {
@@ -23,7 +51,7 @@ struct LoadingView: View {
           .looping()
           .frame(width: 400, height: 400)
 
-        Text(localizedTexts[currentIndex])
+        Text(loadingText.toString)
           .foregroundStyle(.gray900)
           .font(.system(size: 30, weight: .bold))
           .blur(radius: isShowingText ? 0.0 : 16.0)
@@ -34,11 +62,7 @@ struct LoadingView: View {
               withAnimation(.easeOut) {
                 isShowingText = false
               } completion: {
-                if currentIndex == 2 {
-                  currentIndex = 0
-                } else {
-                  currentIndex += 1
-                }
+                loadingText = loadingText.next
                 withAnimation(.easeIn) {
                   isShowingText = true
                 }
@@ -47,24 +71,6 @@ struct LoadingView: View {
           }
       }
     }
-  }
-
-  private let loadingTexts: [String: [String]] = [
-    "ko": [
-      "시나리오를 분석 중입니다.",
-      "씬 단위로 필요한 소품을 정리하고 있습니다.",
-      "최종 소품리스트를 생성하고 있으니 잠시만 기다려주세요.",
-    ],
-    "en": [
-      "Analyzing the scenario.",
-      "Organizing necessary props by scene.",
-      "Finalizing the props list, please wait a moment.",
-    ],
-  ]
-
-  private var localizedTexts: [String] {
-    let langCode = Locale.current.language.languageCode?.identifier ?? "ko"
-    return loadingTexts[langCode] ?? loadingTexts["ko"]!
   }
 }
 

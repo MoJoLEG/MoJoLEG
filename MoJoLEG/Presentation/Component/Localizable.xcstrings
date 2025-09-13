@@ -1,21 +1,21 @@
 {
-  "sourceLanguage" : "en",
+  "sourceLanguage" : "ko",
   "strings" : {
+    "-" : {
+
+    },
     "%@" : {
 
     },
     "%@/%@" : {
       "localizations" : {
-        "en" : {
+        "ko" : {
           "stringUnit" : {
             "state" : "new",
             "value" : "%1$@/%2$@"
           }
         }
       }
-    },
-    "%lf" : {
-
     },
     "%lld" : {
 
@@ -61,8 +61,56 @@
     "Import PDF" : {
 
     },
-    "n/a" : {
-
+    "LoadingText1" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Analyzing the scenario."
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "시나리오를 분석 중입니다."
+          }
+        }
+      }
+    },
+    "LoadingText2" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Organizing necessary props by scene."
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "씬 단위로 필요한 소품을 정리하고 있습니다."
+          }
+        }
+      }
+    },
+    "LoadingText3" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Finalizing the props list, please wait a moment."
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "최종 소품리스트를 생성하고 있으니 잠시만 기다려주세요."
+          }
+        }
+      }
     },
     "Not Use Response Format" : {
 
@@ -320,6 +368,9 @@
           }
         }
       }
+    },
+    "씬 번호" : {
+
     },
     "영화 선재" : {
       "localizations" : {
