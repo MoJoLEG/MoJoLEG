@@ -51,6 +51,10 @@ enum ResponseFormat {
                 "type": "string",
                 "maxLength": 25,
                 "description": "소품에 대한 간단한 한국어 메모 (25자 이내)."
+              },
+              "original_text": {
+                "type": "string",
+                "description": "시나리오에 묘사된 소품에 대한 원문."
               }
             },
             "required": [
@@ -59,7 +63,8 @@ enum ResponseFormat {
               "props_name",
               "major_location",
               "ie_type",
-              "note"
+              "note",
+              "original_text"
             ]
           }
         }

@@ -5,6 +5,7 @@
 //  Created by 정희균 on 8/23/25.
 //
 
+import PDFKit
 import SwiftUI
 
 struct PropListView: View {
@@ -24,13 +25,15 @@ struct PropListView: View {
       .sorted(by: { $0.sceneNumber < $1.sceneNumber })
   }
 
+  @State private var pdfDocument: PDFDocument? = nil
+
   @State private var isScenarioPresented: Bool = false
   @State private var isSidebarPresented: Bool = false
   @State private var isSearchBarPresented: Bool = false
   @State private var searchText: String = ""
   @State private var selectedLayout: PropLayout = .list
   @State private var selectedScene: ScenarioScene? = nil
-  @State private var pendingScrollToID: UUID? = nil
+  @State private var scrollPosition: ScrollPosition = ScrollPosition()
 
   @Namespace private var namespace
 
@@ -67,12 +70,23 @@ struct PropListView: View {
           } else {
             propGallery
           }
-          
+
           scenarioViewer
         }
       }
 
       sidebar
+    }
+    .task {
+      if self.pdfDocument == nil {
+        guard let pdfFile = scenario.pdfFile else { return }
+
+        self.pdfDocument = PDFDocument(data: pdfFile)
+      }
+
+      guard let pdfDocument else { return }
+
+      PDFService.shared.highlightScenario(in: pdfDocument, scenario: scenario)
     }
   }
 
@@ -184,39 +198,31 @@ struct PropListView: View {
   }
 
   private var propList: some View {
-    DirectionalLockScrollView(
-      showsIndicators: true,
-      bounces: true,
-      scrollToID: $pendingScrollToID,
-      orderedIDs: filteredProps.map { $0.id },
-      headerHeight: 60,
-      rowHeight: 56,
-      header: {
-        header
-          .padding(.horizontal, 40)
-      },
-      content: {
-        VStack {
+    ScrollView([.horizontal, .vertical]) {
+      LazyVStack(pinnedViews: .sectionHeaders) {
+        Section {
           ForEach(filteredProps) { prop in
             PropListRowView(prop: prop)
-              .frame(minHeight: 56, alignment: .leading)
+              .padding(.horizontal, 40)
               .id(prop.id)
           }
-        }
-        .padding(.horizontal, 40)
-        .safeAreaPadding(.trailing, 580)
-        .safeAreaPadding(.bottom, 800)
-      }
-    )
-    .onChange(of: selectedScene) { oldValue, newValue in
-      if let newValue {
-        if let target = filteredProps.first(where: {
-          $0.sceneNumber == newValue.sceneNumber
-        }) {
-          pendingScrollToID = target.id
-          isSidebarPresented = false
+        } header: {
+          header
+            .padding(.horizontal, 40)
+            .id("__header__")
         }
       }
+      .safeAreaPadding(.trailing, 580)
+      .safeAreaPadding(.bottom, 800)
+    }
+    .scrollPosition($scrollPosition, anchor: .topLeading)
+    .defaultScrollAnchor(.topLeading)
+    .animation(.default, value: scrollPosition)
+    .onAppear {
+      UIScrollView.appearance().isDirectionalLockEnabled = true
+    }
+    .onDisappear {
+      UIScrollView.appearance().isDirectionalLockEnabled = false
     }
   }
 
@@ -266,7 +272,7 @@ struct PropListView: View {
     .frame(minWidth: 1280)
     .background(.white, in: RoundedRectangle(cornerRadius: 12))
   }
-  
+
   private var propGallery: some View {
     GalleryView(props: filteredProps)
   }
@@ -276,9 +282,45 @@ struct PropListView: View {
       Spacer()
 
       if isScenarioPresented {
-        ScenarioView(scenes: scenario.scenes, selectedScene: $selectedScene)
+        if let pdfDocument {
+          PDFKitView(pdfDocument: pdfDocument, selectedScene: selectedScene) {
+            annotation in
+            guard let page = annotation.page else {
+              print("Failed to find annotation page")
+              return
+            }
+
+            guard let selection = page.selection(for: annotation.bounds) else {
+              print("Failed to select annotation")
+              return
+            }
+
+            guard
+              let target = filteredProps.first(where: {
+                $0.originalText == selection.string
+              })
+            else {
+              print(
+                "Failed to find prop with name: \(String(describing: selection.string))"
+              )
+              return
+            }
+
+            scrollTo(prop: target)
+          }
+          .padding(32)
+          .background {
+            RoundedRectangle(cornerRadius: 24)
+              .fill(.white)
+              .shadow(color: .black.opacity(0.25), radius: 20, x: 4, y: 4)
+          }
           .frame(maxWidth: 540)
           .transition(.move(edge: .trailing).combined(with: .opacity))
+        } else {
+          ScenarioView(scenes: scenario.scenes, selectedScene: $selectedScene)
+            .frame(maxWidth: 540)
+            .transition(.move(edge: .trailing).combined(with: .opacity))
+        }
       }
     }
     .padding(.trailing, 36)
@@ -331,7 +373,10 @@ struct PropListView: View {
                     .onTapGesture {
                       withAnimation {
                         selectedScene = scene
+                        isSidebarPresented = false
                       }
+
+                      scrollTo(scene: scene)
                     }
                 }
               }
@@ -355,148 +400,36 @@ struct PropListView: View {
     }
     .animation(.default, value: isSidebarPresented)
   }
-}
 
-struct DirectionalLockScrollView<Header: View, Content: View>:
-  UIViewRepresentable
-{
-  var showsIndicators: Bool = true
-  var bounces: Bool = true
-  @Binding var scrollToID: UUID?
-  var orderedIDs: [UUID] = []
-  var headerHeight: CGFloat = 60
-  var rowHeight: CGFloat = 56
-  var header: Header
-  var content: Content
-
-  init(
-    showsIndicators: Bool = true,
-    bounces: Bool = true,
-    scrollToID: Binding<UUID?>,
-    orderedIDs: [UUID] = [],
-    headerHeight: CGFloat = 48,
-    rowHeight: CGFloat = 56,
-    @ViewBuilder header: () -> Header,
-    @ViewBuilder content: () -> Content
-  ) {
-    self.showsIndicators = showsIndicators
-    self.bounces = bounces
-    self._scrollToID = scrollToID
-    self.orderedIDs = orderedIDs
-    self.headerHeight = headerHeight
-    self.rowHeight = rowHeight
-    self.header = header()
-    self.content = content()
-  }
-
-  func makeCoordinator() -> Coordinator {
-    Coordinator(
-      hostingContent: UIHostingController(rootView: content),
-      hostingHeader: UIHostingController(rootView: header)
-    )
-  }
-
-  func makeUIView(context: Context) -> UIScrollView {
-    let scrollView = UIScrollView()
-    scrollView.isDirectionalLockEnabled = true  // 핵심: 처음 드래그한 방향으로 잠금
-    scrollView.showsVerticalScrollIndicator = showsIndicators
-    scrollView.showsHorizontalScrollIndicator = showsIndicators
-    scrollView.alwaysBounceVertical = bounces
-    scrollView.alwaysBounceHorizontal = bounces
-    scrollView.bounces = bounces
-    scrollView.delegate = context.coordinator  // (옵션) 필요 시 사용
-
-    // SwiftUI 콘텐츠를 호스팅
-    let host = context.coordinator.hostingContent
-    host.view.backgroundColor = .clear
-    host.view.translatesAutoresizingMaskIntoConstraints = false
-
-    let headerHost = context.coordinator.hostingHeader
-    headerHost.view.backgroundColor = .gray100
-    headerHost.view.translatesAutoresizingMaskIntoConstraints = false
-    scrollView.addSubview(host.view)
-    scrollView.addSubview(headerHost.view)
-
-    // 오토레이아웃: 콘텐츠 전체를 contentLayoutGuide에 고정
-    NSLayoutConstraint.activate([
-      // Header: fixed vertically at the top, follows horizontal content
-      headerHost.view.topAnchor.constraint(
-        equalTo: scrollView.frameLayoutGuide.topAnchor
-      ),
-      headerHost.view.leadingAnchor.constraint(
-        equalTo: scrollView.contentLayoutGuide.leadingAnchor
-      ),
-      headerHost.view.heightAnchor.constraint(equalToConstant: headerHeight),
-      headerHost.view.widthAnchor.constraint(
-        greaterThanOrEqualTo: scrollView.frameLayoutGuide.widthAnchor
-      ),
-
-      // Content: fills the scrollable area and starts below the header
-      host.view.leadingAnchor.constraint(
-        equalTo: scrollView.contentLayoutGuide.leadingAnchor
-      ),
-      host.view.trailingAnchor.constraint(
-        equalTo: scrollView.contentLayoutGuide.trailingAnchor
-      ),
-      host.view.topAnchor.constraint(
-        equalTo: scrollView.contentLayoutGuide.topAnchor,
-        constant: headerHeight
-      ),
-      host.view.bottomAnchor.constraint(
-        equalTo: scrollView.contentLayoutGuide.bottomAnchor
-      ),
-      host.view.widthAnchor.constraint(
-        greaterThanOrEqualTo: scrollView.frameLayoutGuide.widthAnchor
-      ),
-      host.view.heightAnchor.constraint(
-        greaterThanOrEqualTo: scrollView.frameLayoutGuide.heightAnchor
-      ),
-    ])
-
-    context.coordinator.scrollView = scrollView
-
-    // Start visually at the very top (account for adjustedContentInset)
-    let topInset = scrollView.adjustedContentInset.top
-    if topInset != 0 {
-      scrollView.setContentOffset(CGPoint(x: 0, y: -topInset), animated: false)
-    }
-
-    return scrollView
-  }
-
-  func updateUIView(_ scrollView: UIScrollView, context: Context) {
-    context.coordinator.hostingContent.rootView = content
-    context.coordinator.hostingHeader.rootView = header
-
-    if let id = scrollToID, let idx = orderedIDs.firstIndex(of: id) {
-      let topInset = scrollView.adjustedContentInset.top
-      // Align the row so its top edge sits at the visible top of the scroll view
-      let y = headerHeight + CGFloat(idx) * rowHeight - topInset
-      let clampedY = max(-topInset, y)
-      context.coordinator.scrollView?.setContentOffset(
-        CGPoint(x: 0, y: clampedY),
-        animated: true
+  private func scrollTo(scene: ScenarioScene) {
+    guard
+      let firstSceneProp = filteredProps.first(where: {
+        $0.sceneNumber == scene.sceneNumber
+      })
+    else {
+      print(
+        "Failed to find first prop for scene: \(String(describing: scene.sceneNumber))"
       )
-      DispatchQueue.main.async { self.scrollToID = nil }
+      return
     }
+
+    scrollTo(prop: firstSceneProp)
   }
 
-  class Coordinator: NSObject, UIScrollViewDelegate {
-    let hostingContent: UIHostingController<Content>
-    let hostingHeader: UIHostingController<Header>
-    weak var scrollView: UIScrollView?
-    init(
-      hostingContent: UIHostingController<Content>,
-      hostingHeader: UIHostingController<Header>
-    ) {
-      self.hostingContent = hostingContent
-      self.hostingHeader = hostingHeader
+  private func scrollTo(prop: Prop) {
+    guard let index = filteredProps.firstIndex(of: prop) else {
+      print("Failed to find index for prop: \(prop.name)")
+      return
     }
 
-    // 필요 시 스크롤 이벤트 활용
-    func scrollViewDidScroll(_ scrollView: UIScrollView) {
-      // 예: 디버깅용으로 오프셋 출력
-      // print(scrollView.contentOffset)
+    let previousIndex = index - 1
+
+    if previousIndex < 0 {
+      scrollPosition.scrollTo(point: .zero)
+    } else if filteredProps.indices.contains(previousIndex) {
+      let previousTarget = filteredProps[previousIndex]
+
+      scrollPosition.scrollTo(id: previousTarget.id)
     }
   }
 }

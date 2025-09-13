@@ -17,6 +17,7 @@ class Scenario {
   var isFavorite: Bool
   var createdAt: Date
   var updatedAt: Date
+  var pdfFile: Data?
 
   init(
     id: UUID,
@@ -25,7 +26,8 @@ class Scenario {
     props: [Prop],
     isFavorite: Bool,
     createdAt: Date,
-    updatedAt: Date
+    updatedAt: Date,
+    pdfFile: Data? = nil
   ) {
     self.id = id
     self.title = title
@@ -34,6 +36,7 @@ class Scenario {
     self.isFavorite = isFavorite
     self.createdAt = createdAt
     self.updatedAt = updatedAt
+    self.pdfFile = pdfFile
   }
 }
 

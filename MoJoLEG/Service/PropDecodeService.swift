@@ -13,22 +13,23 @@ enum PropDecodeServiceError: Error, LocalizedError {
 
 final class PropDecodeService {
   static let shared = PropDecodeService()
-  
+
   private init() {}
-  
+
   func decode(_ text: String) throws -> [Prop] {
     let jsonDecoder = JSONDecoder()
-    
-    guard let data = text.data(using: .utf8) else { throw PropDecodeServiceError.failedToConvertStringToData }
-    
+
+    guard let data = text.data(using: .utf8) else {
+      throw PropDecodeServiceError.failedToConvertStringToData
+    }
+
     let propDtos = try jsonDecoder.decode([PropDto].self, from: data)
-    
+
     let props = propDtos.map { $0.toProp() }
-    
+
     return props
   }
 }
-
 
 // MARK: - Prop DTO
 
@@ -41,6 +42,7 @@ struct PropDto: Decodable {
   let ieType: String
   let character: String?
   let note: String
+  let originalText: String
 
   // JSON 키와 Swift 프로퍼티 매핑
   enum CodingKeys: String, CodingKey {
@@ -52,6 +54,7 @@ struct PropDto: Decodable {
     case ieType = "ie_type"
     case character
     case note
+    case originalText = "original_text"
   }
 }
 
@@ -89,7 +92,8 @@ extension PropDto {
       minorLocation: minorLocation,
       environment: environment,
       character: character,
-      note: note
+      note: note,
+      originalText: originalText
     )
   }
 }

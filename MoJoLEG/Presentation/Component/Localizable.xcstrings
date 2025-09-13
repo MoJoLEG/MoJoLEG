@@ -55,6 +55,12 @@
     "I/E" : {
 
     },
+    "Import" : {
+
+    },
+    "Import PDF" : {
+
+    },
     "n/a" : {
 
     },
@@ -88,6 +94,9 @@
 
     },
     "S#%lld" : {
+
+    },
+    "Search" : {
 
     },
     "Seperate Scene" : {
