@@ -9,7 +9,7 @@ import PDFKit
 import SwiftUI
 
 struct ScenarioPropsView: View {
-  enum PropsLayout {
+  enum PropsLayout: Hashable {
     case list
     case gallery
   }
@@ -97,16 +97,16 @@ struct ScenarioPropsView: View {
         .padding(.horizontal, 40)
         .padding(.vertical, 8)
 
-        ZStack {
-          switch selectedLayout {
-          case .list:
-            propsList
-              .transition(.move(edge: .leading))
-          case .gallery:
-            propsGallery
-              .transition(.move(edge: .trailing))
-          }
+        TabView(selection: $selectedLayout) {
+          propsList
+            .tag(PropsLayout.list)
 
+          propsGallery
+            .tag(PropsLayout.gallery)
+        }
+        .ignoresSafeArea(.container, edges: .bottom)
+        .tabViewStyle(PageTabViewStyle(indexDisplayMode: .never))
+        .overlay(alignment: .trailing) {
           scenarioViewer
         }
       }
@@ -134,7 +134,9 @@ struct ScenarioPropsView: View {
   private var topToolbar: some View {
     HStack {
       Button {
-        isSidebarPresented = true
+        withAnimation {
+          isSidebarPresented = true
+        }
       } label: {
         Image(systemName: "sidebar.left")
           .foregroundStyle(.primaryYellow)
@@ -144,7 +146,7 @@ struct ScenarioPropsView: View {
 
       HStack(spacing: 12) {
         HStack {
-          Toggle(isOn: $isScenarioPresented) {}
+          Toggle(isOn: $isScenarioPresented.animation(.default)) {}
             .tint(.primaryYellow)
             .frame(maxWidth: 72)
           Text("시나리오 보기")
@@ -243,6 +245,7 @@ struct ScenarioPropsView: View {
     PropsListView(
       scenario: scenario,
       props: filteredProps,
+      isScenarioPresented: $isScenarioPresented,
       selectedSceneNumber: $selectedSceneNumber,
       selectedCategory: $selectedCategory,
       selectedMajorLocation: $selectedMajorLocation,
@@ -259,129 +262,120 @@ struct ScenarioPropsView: View {
       selectedSceneNumber: $selectedSceneNumber,
       selectedCategory: $selectedCategory,
       selectedMajorLocation: $selectedMajorLocation,
-      selectedCharacter: $selectedCharacter
+      selectedCharacter: $selectedCharacter,
+      selectedScene: $selectedScene,
+      selectedProp: $selectedProp
     )
   }
 
   private var scenarioViewer: some View {
-    HStack {
-      Spacer()
-
-      if isScenarioPresented {
-        Group {
-          if let pdfDocument {
-            PDFKitView(pdfDocument: pdfDocument, selectedScene: selectedScene) {
-              annotation in
-              guard let page = annotation.page else {
-                print("Failed to find annotation page")
-                return
-              }
-
-              guard let selection = page.selection(for: annotation.bounds)
-              else {
-                print("Failed to select annotation")
-                return
-              }
-
-              guard
-                let target = filteredProps.first(where: {
-                  $0.originalText == selection.string
-                })
-              else {
-                print(
-                  "Failed to find prop with name: \(String(describing: selection.string))"
-                )
-                return
-              }
-
-              self.selectedProp = target
-            }
-            .padding(32)
-            .background {
-              RoundedRectangle(cornerRadius: 24)
-                .fill(.white)
-                .shadow(color: .black.opacity(0.25), radius: 20, x: 4, y: 4)
-            }
-          } else {
-            ScenarioView(scenes: scenario.scenes, selectedScene: $selectedScene)
+    Group {
+      if let pdfDocument {
+        PDFKitView(pdfDocument: pdfDocument, selectedScene: selectedScene) {
+          annotation in
+          guard let page = annotation.page else {
+            print("Failed to find annotation page")
+            return
           }
+
+          guard let selection = page.selection(for: annotation.bounds)
+          else {
+            print("Failed to select annotation")
+            return
+          }
+
+          guard
+            let target = filteredProps.first(where: {
+              $0.originalText == selection.string
+            })
+          else {
+            print(
+              "Failed to find prop with name: \(String(describing: selection.string))"
+            )
+            return
+          }
+
+          self.selectedProp = target
         }
-        .frame(maxWidth: 540)
-        .transition(.move(edge: .trailing).combined(with: .opacity))
-      }
-    }
-    .padding(.trailing, 36)
-    .animation(.default, value: isScenarioPresented)
-  }
-
-  private var sidebar: some View {
-    HStack {
-      if isSidebarPresented {
-        VStack(alignment: .leading) {
-          HStack {
-            Image(.logo)
-              .resizable()
-              .scaledToFit()
-              .frame(maxWidth: 72)
-
-            Spacer()
-          }
-          .padding(.horizontal, 16)
-          .padding(.top)
-
-          Text(scenario.title)
-            .font(.title3)
-            .bold()
-            .padding(.horizontal, 16)
-
-          ScrollView {
-            LazyVStack(alignment: .leading) {
-              ForEach(
-                scenario.scenes.sorted(by: {
-                  $0.order < $1.order
-                })
-              ) { scene in
-                Text(scene.title)
-                  .foregroundStyle(
-                    scene == selectedScene ? .primaryYellow : .gray900
-                  )
-                  .padding(16)
-                  .onTapGesture {
-                    withAnimation {
-                      selectedScene = scene
-                      isSidebarPresented = false
-                    }
-                  }
-              }
-            }
-            .frame(maxWidth: .infinity)
-          }
-        }
-        .padding(16)
+        .padding(32)
         .background {
           RoundedRectangle(cornerRadius: 24)
             .fill(.white)
-            .shadow(color: .black.opacity(0.25), radius: 4, x: 4, y: 4)
+            .shadow(color: .black.opacity(0.25), radius: 20, x: 4, y: 4)
         }
-        .frame(maxWidth: 360)
-        .transition(.move(edge: .leading).combined(with: .opacity))
+      } else {
+        ScenarioView(scenes: scenario.scenes, selectedScene: $selectedScene)
       }
-
-      Spacer()
     }
-    .padding(.leading, 36)
-    .background {
-      if isSidebarPresented {
-        Color.black
-          .opacity(0.3)
-          .ignoresSafeArea()
-          .onTapGesture {
+    .frame(maxWidth: 672)
+    .offset(x: isScenarioPresented ? -36 : 708)
+  }
+
+  private var sidebar: some View {
+    ZStack(alignment: .leading) {
+      Color.black
+        .opacity(isSidebarPresented ? 0.3 : 0)
+        .ignoresSafeArea()
+        .allowsHitTesting(isSidebarPresented)
+        .onTapGesture {
+          withAnimation {
             isSidebarPresented = false
           }
-          .transition(.opacity)
+        }
+
+      VStack(alignment: .leading) {
+        HStack {
+          Image(.logo)
+            .resizable()
+            .scaledToFit()
+            .frame(maxWidth: 72)
+
+          Spacer()
+        }
+
+        ScrollView {
+          LazyVStack(alignment: .leading) {
+            ForEach(
+              scenario.scenes.sorted(by: {
+                $0.order < $1.order
+              })
+            ) { scene in
+              let isSelected = scene == selectedScene
+              Button {
+                withAnimation {
+                  selectedScene = scene
+                  isSidebarPresented = false
+                }
+              } label: {
+                Text(scene.title)
+                  .bold(isSelected)
+                  .multilineTextAlignment(.leading)
+                  .foregroundStyle(
+                    isSelected ? Color.white : Color.gray900
+                  )
+                  .padding(16)
+                  .frame(maxWidth: .infinity, alignment: .leading)
+                  .background(
+                    RoundedRectangle(cornerRadius: 12)
+                      .fill(Color.primaryYellow)
+                      .opacity(isSelected ? 1 : 0)
+                  )
+              }
+            }
+          }
+          .frame(maxWidth: .infinity)
+        }
+        .scrollIndicators(.hidden)
       }
+      .padding(32)
+      .background {
+        RoundedRectangle(cornerRadius: 24)
+          .fill(.white)
+          .shadow(color: .black.opacity(0.25), radius: 4, x: 4, y: 4)
+      }
+      .frame(maxWidth: 360)
+      .offset(x: isSidebarPresented ? 36 : -396)
     }
-    .animation(.default, value: isSidebarPresented)
   }
 }
 

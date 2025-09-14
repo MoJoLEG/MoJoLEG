@@ -5,12 +5,15 @@
 //  Created by 정희균 on 8/23/25.
 //
 
+import PhotosUI
 import SwiftUI
 
 struct PropsListView: View {
   let scenario: Scenario
   let props: [Prop]
 
+  @Binding var isScenarioPresented: Bool
+  
   @Binding var selectedSceneNumber: Int?
   @Binding var selectedCategory: PropCategory?
   @Binding var selectedMajorLocation: String?
@@ -19,24 +22,38 @@ struct PropsListView: View {
   @Binding var selectedProp: Prop?
 
   @State private var scrollPosition: ScrollPosition = ScrollPosition()
+  @State private var scrollViewSize: CGSize = .zero
 
   var body: some View {
     ScrollView([.horizontal, .vertical]) {
       LazyVStack(pinnedViews: .sectionHeaders) {
         Section {
           ForEach(props) { prop in
-            PropsListRowView(prop: prop)
-              .padding(.horizontal, 40)
-              .id(prop.id)
+            HStack {
+              PropsListRowView(prop: prop)
+              Spacer()
+            }
+            .id(prop.id)
           }
         } header: {
-          header
-            .padding(.horizontal, 40)
-            .id("__header__")
+          HStack {
+            header
+            Spacer()
+          }
+          .id("__header__")
         }
       }
-      .safeAreaPadding(.trailing, 580)
-      .safeAreaPadding(.bottom, 800)
+      .safeAreaPadding(.horizontal, isScenarioPresented ? 40 : nil)
+      .frame(
+        minWidth: isScenarioPresented ? scrollViewSize.width * 1.6 : nil,
+        minHeight: scrollViewSize.height,
+        alignment: .topLeading
+      )
+    }
+    .onGeometryChange(for: CGSize.self) { proxy in
+      proxy.size
+    } action: { newValue in
+      scrollViewSize = newValue
     }
     .scrollPosition($scrollPosition, anchor: .topLeading)
     .defaultScrollAnchor(.topLeading)
@@ -69,24 +86,20 @@ struct PropsListView: View {
       headerPropEnvironment
       headerCharacter
       headerPropNote
-      headerPropCount
-      headerPropPrice
       headerReferenceImage
-      headerResponsibleTeam
     }
     .font(.system(size: 17, weight: .semibold))
     .minimumScaleFactor(0.5)
     .foregroundStyle(.gray900)
     .padding(.vertical, 10)
     .padding(.horizontal, 28)
-    .frame(minWidth: 1280)
     .background(.white, in: RoundedRectangle(cornerRadius: 12))
   }
 
   private var headerCompleted: some View {
     Image(systemName: "checkmark.circle.fill")
       .lineLimit(1)
-      .frame(minWidth: 16)
+      .frame(width: PropsListConstants.Columns.completedWidth)
   }
 
   private var headerSceneNumber: some View {
@@ -103,10 +116,13 @@ struct PropsListView: View {
         }
       }
     } label: {
-      Text(selectedSceneNumber?.formatted() ?? "S#")
-        .lineLimit(1)
-        .foregroundStyle(selectedSceneNumber != nil ? .primaryYellow : .gray900)
-        .frame(width: 24)
+      HStack(spacing: 4) {
+        Text(selectedSceneNumber?.formatted() ?? "S#")
+          .lineLimit(1)
+        Image(systemName: "chevron.up.chevron.down")
+      }
+      .foregroundStyle(selectedSceneNumber != nil ? .primaryYellow : .gray900)
+      .frame(width: PropsListConstants.Columns.sceneNumberWidth)
     }
   }
 
@@ -121,20 +137,20 @@ struct PropsListView: View {
         }
       }
     } label: {
-      HStack {
+      HStack(spacing: 4) {
         Text(selectedCategory?.toString ?? "구분")
           .lineLimit(1)
         Image(systemName: "chevron.up.chevron.down")
       }
       .foregroundStyle(selectedCategory != nil ? .primaryYellow : .gray900)
-      .frame(width: 54)
+      .frame(width: PropsListConstants.Columns.propCategoryWidth)
     }
   }
 
   private var headerPropName: some View {
     Text("이름")
       .lineLimit(1)
-      .frame(width: 80)
+      .frame(width: PropsListConstants.Columns.propNameWidth)
   }
 
   private var headerMajorLocation: some View {
@@ -151,20 +167,20 @@ struct PropsListView: View {
         }
       }
     } label: {
-      HStack {
+      HStack(spacing: 4) {
         Text(selectedMajorLocation ?? "장소")
           .lineLimit(1)
         Image(systemName: "chevron.up.chevron.down")
       }
       .foregroundStyle(selectedMajorLocation != nil ? .primaryYellow : .gray900)
-      .frame(width: 72)
+      .frame(width: PropsListConstants.Columns.propLocationWidth)
     }
   }
 
   private var headerPropEnvironment: some View {
     Text("I/E")
       .lineLimit(1)
-      .frame(width: 24)
+      .frame(width: PropsListConstants.Columns.propEnvironmentWidth)
   }
 
   private var headerCharacter: some View {
@@ -181,44 +197,26 @@ struct PropsListView: View {
         }
       }
     } label: {
-      HStack {
+      HStack(spacing: 4) {
         Text(selectedCharacter ?? "등장인물")
           .lineLimit(1)
         Image(systemName: "chevron.up.chevron.down")
       }
       .foregroundStyle(selectedCharacter != nil ? .primaryYellow : .gray900)
-      .frame(width: 96)
+      .frame(width: PropsListConstants.Columns.propCharacterWidth)
     }
   }
 
   private var headerPropNote: some View {
     Text("비고")
       .lineLimit(1)
-      .frame(width: 160)
-  }
-
-  private var headerPropCount: some View {
-    Text("개수")
-      .lineLimit(1)
-      .frame(width: 32)
-  }
-
-  private var headerPropPrice: some View {
-    Text("구매가")
-      .lineLimit(1)
-      .frame(width: 96)
+      .frame(width: PropsListConstants.Columns.propNoteWidth)
   }
 
   private var headerReferenceImage: some View {
     Text("레퍼런스 이미지")
       .lineLimit(1)
-      .frame(width: 160)
-  }
-
-  private var headerResponsibleTeam: some View {
-    Text("담당팀")
-      .lineLimit(1)
-      .frame(width: 128)
+      .frame(width: PropsListConstants.Columns.propReferenceImageWidth)
   }
 
   private func scrollTo(scene: ScenarioScene) {
@@ -255,6 +253,8 @@ struct PropsListView: View {
 }
 
 #Preview("PropsListView") {
+  @Previewable @State var isScenarioPresented: Bool = false
+  
   @Previewable @State var selectedSceneNumber: Int? = nil
   @Previewable @State var selectedCategory: PropCategory? = nil
   @Previewable @State var selectedMajorLocation: String? = nil
@@ -263,11 +263,15 @@ struct PropsListView: View {
   @Previewable @State var selectedProp: Prop? = nil
 
   let scenario: Scenario = .sample
+  scenario.props = [
+    .sample
+  ]
   let props = scenario.props
 
-  PropsListView(
+  return PropsListView(
     scenario: scenario,
     props: props,
+    isScenarioPresented: $isScenarioPresented,
     selectedSceneNumber: $selectedSceneNumber,
     selectedCategory: $selectedCategory,
     selectedMajorLocation: $selectedMajorLocation,
@@ -280,6 +284,10 @@ struct PropsListView: View {
 private struct PropsListRowView: View {
   let prop: Prop
 
+  @State private var isPhotoMenuPresented: Bool = false
+  @State private var isPhotoPickerPresented: Bool = false
+  @State private var imageSelection: PhotosPickerItem? = nil
+
   var body: some View {
     HStack(spacing: 24) {
       propCompleted
@@ -290,15 +298,12 @@ private struct PropsListRowView: View {
       propEnvironment
       propCharacter
       propNote
-      propCount
-      propPrice
       propReferenceImage
-      propResponsibleTeam
     }
+    .minimumScaleFactor(0.5)
     .foregroundStyle(prop.isCompleted ? .gray600 : .gray900)
-    .padding(.vertical, 20)
+    .padding(.vertical, 8)
     .padding(.horizontal, 28)
-    .frame(minWidth: 1280)
     .background(
       prop.isCompleted ? .gray300 : .white,
       in: RoundedRectangle(cornerRadius: 12)
@@ -311,66 +316,52 @@ private struct PropsListRowView: View {
     } label: {
       Image(systemName: prop.isCompleted ? "checkmark.circle.fill" : "circle")
         .foregroundStyle(prop.isCompleted ? .primaryYellow : .gray900)
-        .frame(width: 16)
+        .frame(width: PropsListConstants.Columns.completedWidth)
     }
   }
 
   private var propSceneNumber: some View {
     Text("\(prop.sceneNumber)")
       .lineLimit(1)
-      .frame(width: 24)
+      .frame(width: PropsListConstants.Columns.sceneNumberWidth)
   }
 
   private var propCategory: some View {
     Text("\(prop.category.toString)")
       .lineLimit(1)
-      .frame(width: 54)
+      .frame(width: PropsListConstants.Columns.propCategoryWidth)
       .background(prop.category.toHighlight)
   }
 
   private var propName: some View {
     Text("\(prop.name)")
-      .minimumScaleFactor(0.5)
       .lineLimit(1)
-      .frame(width: 80)
+      .frame(width: PropsListConstants.Columns.propNameWidth)
   }
 
   private var propLocation: some View {
     Text(prop.majorLocation + (prop.minorLocation.map { "/\($0)" } ?? ""))
-      .minimumScaleFactor(0.5)
       .lineLimit(1)
-      .frame(width: 72)
+      .frame(width: PropsListConstants.Columns.propLocationWidth)
   }
 
   private var propEnvironment: some View {
     Text("\(prop.environment.toString)")
       .lineLimit(1)
-      .frame(width: 24)
+      .frame(width: PropsListConstants.Columns.propEnvironmentWidth)
   }
 
   private var propCharacter: some View {
     Text("\(prop.character ?? "")")
       .lineLimit(1)
-      .frame(width: 96)
+      .frame(width: PropsListConstants.Columns.propCharacterWidth)
   }
 
   private var propNote: some View {
     Text("\(prop.note)")
       .minimumScaleFactor(0.5)
       .lineLimit(1)
-      .frame(width: 160)
-  }
-
-  private var propCount: some View {
-    Text(prop.count.map { $0.formatted() } ?? "-")
-      .lineLimit(1)
-      .frame(width: 32)
-  }
-
-  private var propPrice: some View {
-    Text(prop.price.map { $0.formatted() } ?? "-")
-      .lineLimit(1)
-      .frame(width: 96)
+      .frame(width: PropsListConstants.Columns.propNoteWidth)
   }
 
   private var propReferenceImage: some View {
@@ -380,18 +371,52 @@ private struct PropsListRowView: View {
       {
         Image(uiImage: uiImage)
           .resizable()
-          .scaledToFit()
+          .scaledToFill()
       } else {
-        Text("-")
+        Color.gray200
+          .overlay {
+            Image(systemName: "camera")
+          }
       }
     }
-    .frame(width: 160)
-  }
-
-  private var propResponsibleTeam: some View {
-    Text(prop.responsibleTeam ?? "-")
-      .lineLimit(1)
-      .frame(width: 128)
+    .frame(
+      width: PropsListConstants.propReferenceImageMaxWidth,
+      height: PropsListConstants.propReferenceImageMaxHeight
+    )
+    .clipShape(RoundedRectangle(cornerRadius: 8))
+    .frame(width: PropsListConstants.Columns.propReferenceImageWidth)
+    .onTapGesture {
+      isPhotoMenuPresented = true
+    }
+    .confirmationDialog(
+      "사진 설정",
+      isPresented: $isPhotoMenuPresented,
+      titleVisibility: .visible
+    ) {
+      Button("앨범에서 사진 선택") {
+        isPhotoPickerPresented = true
+      }
+      Button("삭제", role: .destructive) {
+        prop.referenceImage = nil
+      }
+      .disabled(prop.referenceImage == nil)
+    }
+    .photosPicker(
+      isPresented: $isPhotoPickerPresented,
+      selection: $imageSelection
+    )
+    .onChange(of: imageSelection) { oldValue, newValue in
+      if let newValue {
+        newValue.loadTransferable(type: Data.self) { result in
+          switch result {
+          case .success(let data):
+            prop.referenceImage = data
+          case .failure(let error):
+            print("Failed to load image: \(error)")
+          }
+        }
+      }
+    }
   }
 }
 
@@ -403,4 +428,21 @@ private struct PropsListRowView: View {
     PropsListRowView(prop: prop)
     PropsListRowView(prop: .sample)
   }
+}
+
+private enum PropsListConstants {
+  enum Columns {
+    static let completedWidth: CGFloat = 16.0
+    static let sceneNumberWidth: CGFloat = 48.0
+    static let propCategoryWidth: CGFloat = 56.0
+    static let propNameWidth: CGFloat = 144.0
+    static let propLocationWidth: CGFloat = 144.0
+    static let propEnvironmentWidth: CGFloat = 22.0
+    static let propCharacterWidth: CGFloat = 144.0
+    static let propNoteWidth: CGFloat = 200.0
+    static let propReferenceImageWidth: CGFloat = 144.0
+  }
+
+  static let propReferenceImageMaxWidth: CGFloat = 80.0
+  static let propReferenceImageMaxHeight: CGFloat = 60.0
 }

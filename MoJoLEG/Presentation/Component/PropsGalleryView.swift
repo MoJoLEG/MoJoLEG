@@ -16,6 +16,10 @@ struct PropsGalleryView: View {
   @Binding var selectedCategory: PropCategory?
   @Binding var selectedMajorLocation: String?
   @Binding var selectedCharacter: String?
+  @Binding var selectedScene: ScenarioScene?
+  @Binding var selectedProp: Prop?
+
+  @State private var scrollPosition: ScrollPosition = ScrollPosition()
 
   private let backgroundColor: Color = Color.gray100
 
@@ -29,17 +33,31 @@ struct PropsGalleryView: View {
           ) {
             ForEach(props) { prop in
               PropCardView(prop: prop)
+                .id(prop.id)
             }
           }
           .safeAreaPadding(.horizontal, 40)
         } header: {
           header
+            .id("__header__")
         }
       }
     }
+    .scrollPosition($scrollPosition)
+    .animation(.default, value: scrollPosition)
     .background(
       backgroundColor
     )
+    .onChange(of: selectedScene) { oldValue, newValue in
+      if let newValue {
+        scrollTo(scene: newValue)
+      }
+    }
+    .onChange(of: selectedProp) { oldValue, newValue in
+      if let newValue {
+        scrollTo(prop: newValue)
+      }
+    }
   }
 
   private var header: some View {
@@ -88,7 +106,7 @@ struct PropsGalleryView: View {
         }
       }
     } label: {
-      HStack {
+      HStack(spacing: 4) {
         Text(selectedSceneNumber?.formatted() ?? "S#")
           .lineLimit(1)
           .foregroundStyle(
@@ -110,7 +128,7 @@ struct PropsGalleryView: View {
         }
       }
     } label: {
-      HStack {
+      HStack(spacing: 4) {
         Text(selectedCategory?.toString ?? "구분")
           .lineLimit(1)
         Image(systemName: "chevron.up.chevron.down")
@@ -133,7 +151,7 @@ struct PropsGalleryView: View {
         }
       }
     } label: {
-      HStack {
+      HStack(spacing: 4) {
         Text(selectedMajorLocation ?? "장소")
           .lineLimit(1)
         Image(systemName: "chevron.up.chevron.down")
@@ -156,13 +174,32 @@ struct PropsGalleryView: View {
         }
       }
     } label: {
-      HStack {
+      HStack(spacing: 4) {
         Text(selectedCharacter ?? "등장인물")
           .lineLimit(1)
         Image(systemName: "chevron.up.chevron.down")
       }
       .foregroundStyle(selectedCharacter != nil ? .primaryYellow : .gray900)
     }
+  }
+
+  private func scrollTo(scene: ScenarioScene) {
+    guard
+      let firstSceneProp = props.first(where: {
+        $0.sceneNumber == scene.sceneNumber
+      })
+    else {
+      print(
+        "Failed to find first prop for scene: \(String(describing: scene.sceneNumber))"
+      )
+      return
+    }
+
+    scrollTo(prop: firstSceneProp)
+  }
+
+  private func scrollTo(prop: Prop) {
+    scrollPosition.scrollTo(id: prop.id)
   }
 }
 
@@ -175,15 +212,20 @@ struct PropsGalleryView: View {
   @Previewable @State var selectedProp: Prop? = nil
 
   let scenario: Scenario = .sample
+  scenario.props = [
+    .sample
+  ]
   let props = scenario.props
 
-  PropsGalleryView(
+  return PropsGalleryView(
     scenario: scenario,
     props: props,
     selectedSceneNumber: $selectedSceneNumber,
     selectedCategory: $selectedCategory,
     selectedMajorLocation: $selectedMajorLocation,
-    selectedCharacter: $selectedCharacter
+    selectedCharacter: $selectedCharacter,
+    selectedScene: $selectedScene,
+    selectedProp: $selectedProp
   )
 }
 
@@ -197,10 +239,12 @@ private struct PropCardView: View {
       cardHeader
       cardFooter
     }
-    .frame(maxWidth: .infinity, idealHeight: height)
+    .frame(maxWidth: .infinity, maxHeight: height)
     .clipShape(RoundedRectangle(cornerRadius: 20))
   }
 
+  @State private var isPhotoMenuPresented: Bool = false
+  @State private var isPhotoPickerPresented: Bool = false
   @State private var imageSelection: PhotosPickerItem? = nil
 
   private var cardHeader: some View {
@@ -214,23 +258,43 @@ private struct PropCardView: View {
             .scaledToFill()
             .frame(minHeight: 0, maxHeight: .infinity)
         } else {
-          Color.gray300
+          Color.gray200
+            .overlay {
+              Image(systemName: "camera")
+                .font(.system(size: 40))
+                .foregroundStyle(Color.gray900)
+            }
         }
       }
-      .overlay(alignment: .bottomTrailing) {
-        PhotosPicker(selection: $imageSelection, matching: .images) {
-          Image(systemName: "photo")
-            .padding()
+      .onTapGesture {
+        print("Tapped")
+        isPhotoMenuPresented = true
+      }
+      .confirmationDialog(
+        "사진 설정",
+        isPresented: $isPhotoMenuPresented,
+        titleVisibility: .visible
+      ) {
+        Button("앨범에서 사진 선택") {
+          isPhotoPickerPresented = true
         }
-        .onChange(of: imageSelection) { oldValue, newValue in
-          if let newValue {
-            newValue.loadTransferable(type: Data.self) { result in
-              switch result {
-              case .success(let data):
-                prop.referenceImage = data
-              case .failure(let error):
-                print("Failed to load image: \(error)")
-              }
+        Button("삭제", role: .destructive) {
+          prop.referenceImage = nil
+        }
+        .disabled(prop.referenceImage == nil)
+      }
+      .photosPicker(
+        isPresented: $isPhotoPickerPresented,
+        selection: $imageSelection
+      )
+      .onChange(of: imageSelection) { oldValue, newValue in
+        if let newValue {
+          newValue.loadTransferable(type: Data.self) { result in
+            switch result {
+            case .success(let data):
+              prop.referenceImage = data
+            case .failure(let error):
+              print("Failed to load image: \(error)")
             }
           }
         }
@@ -241,6 +305,11 @@ private struct PropCardView: View {
           Text("S#\(prop.sceneNumber)")
             .font(.system(size: 20, weight: .semibold))
             .foregroundStyle(.gray900)
+            .padding(4)
+            .background(
+              RoundedRectangle(cornerRadius: 4)
+                .fill(Color.skyBlueLight)
+            )
 
           Spacer()
 
@@ -254,17 +323,19 @@ private struct PropCardView: View {
             .foregroundStyle(
               prop.isCompleted ? Color.primaryYellow : Color.gray900
             )
+            .frame(width: 26, height: 26)
           }
         }
         .padding(20)
         .background(
           VariableBlurView(maxBlurRadius: 8, direction: .blurredTopClearBottom)
+            .allowsHitTesting(false)
         )
 
         Spacer()
       }
     }
-    .frame(maxWidth: .infinity, idealHeight: height / 2)
+    .frame(maxWidth: .infinity, idealHeight: height / 2, maxHeight: height / 2)
   }
 
   private var cardFooter: some View {
@@ -284,7 +355,7 @@ private struct PropCardView: View {
 
           Spacer()
 
-          Text("\(prop.category.toString)")
+          Text(prop.category.toString)
             .foregroundStyle(.gray900)
             .lineLimit(1)
             .frame(width: 54)
@@ -301,7 +372,7 @@ private struct PropCardView: View {
             .font(.system(size: 17, weight: .semibold))
             .foregroundStyle(.gray900)
             .frame(maxWidth: .infinity, alignment: .leading)
-          Text("\(prop.majorLocation)/\(prop.minorLocation ?? "n/a")")
+          Text(prop.majorLocation + (prop.minorLocation.map { "/\($0)" } ?? ""))
             .font(.system(size: 15))
             .foregroundStyle(.gray900)
             .frame(maxWidth: .infinity, alignment: .leading)
@@ -310,7 +381,7 @@ private struct PropCardView: View {
             .font(.system(size: 17, weight: .semibold))
             .foregroundStyle(.gray900)
             .frame(maxWidth: .infinity, alignment: .leading)
-          Text(prop.character ?? "n/a")
+          Text("\(prop.character ?? "")")
             .font(.system(size: 15))
             .foregroundStyle(.gray900)
             .frame(maxWidth: .infinity, alignment: .leading)
@@ -332,7 +403,7 @@ private struct PropCardView: View {
       }
       .padding(20)
     }
-    .frame(maxWidth: .infinity, idealHeight: height / 2)
+    .frame(maxWidth: .infinity, idealHeight: height / 2, maxHeight: height / 2)
   }
 }
 
