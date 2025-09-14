@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-enum PropCategory: Codable, CaseIterable {
+enum PropCategory: Int, Codable, CaseIterable {
   case major
   case minor
   case uncategorized

@@ -5,7 +5,7 @@
 //  Created by 정희균 on 8/23/25.
 //
 
-enum PropEnvironment: Codable {
+enum PropEnvironment: Int, Codable {
   case interior
   case exterior
 }

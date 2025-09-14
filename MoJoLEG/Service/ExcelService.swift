@@ -83,16 +83,16 @@ final class ExcelService {
       cell.value = .text(prop.note)
 
       cell = sheet.AddCell(XCoords(row: 2 + index, col: 9))
-      cell.value = .text("\(prop.count ?? 0)")
+      cell.value = .text("0")
 
       cell = sheet.AddCell(XCoords(row: 2 + index, col: 10))
-      cell.value = .text("\(prop.price ?? 0)")
+      cell.value = .text("0")
 
       cell = sheet.AddCell(XCoords(row: 2 + index, col: 11))
       cell.value = .text("n/a")
 
       cell = sheet.AddCell(XCoords(row: 2 + index, col: 12))
-      cell.value = .text(prop.responsibleTeam ?? "")
+      cell.value = .text("")
     }
 
     let path = book.save("소품리스트_\(scenario.title).xlsx")
