@@ -13,10 +13,10 @@ final class SeperateSceneService {
   private init() {}
 
   func separteScenes(scenario: String) -> [ScenarioScene]? {
-    let pattern = #".*#\d+(-\d+)?[^\n]*"#
+      let pattern = #"^(?:S#\d+(-\d+)?\.?|#\d+\.?|\d+\. |S#?(쿠키|COOKIE|인트로|프롤로그|에필로그)|프롤로그|에필로그|쿠키|COOKIE)"#
 
     do {
-      let regex = try NSRegularExpression(pattern: pattern, options: [])
+      let regex = try NSRegularExpression(pattern: pattern, options: [.anchorsMatchLines])
       let matches = regex.matches(
         in: scenario,
         range: NSRange(scenario.startIndex..., in: scenario)

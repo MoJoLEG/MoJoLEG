@@ -12,7 +12,8 @@ import SwiftUI
 struct MoJoLEGApp: App {
   var body: some Scene {
     WindowGroup {
-      ChooseScenarioView()
+//      ChooseScenarioView()
+        DevView()
     }
     .modelContainer(
       for: [Scenario.self, Prop.self, ScenarioScene.self],
