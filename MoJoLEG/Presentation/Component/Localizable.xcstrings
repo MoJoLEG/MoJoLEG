@@ -40,6 +40,9 @@
     "Dev" : {
 
     },
+    "Document OCR" : {
+
+    },
     "Error" : {
 
     },
@@ -64,10 +67,16 @@
     "n/a" : {
 
     },
+    "No file selected" : {
+
+    },
     "Not Use Response Format" : {
 
     },
     "Open file" : {
+
+    },
+    "Open PDF" : {
 
     },
     "Original" : {

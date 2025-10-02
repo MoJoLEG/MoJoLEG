@@ -29,6 +29,9 @@ struct DevView: View {
         NavigationLink("Import PDF") {
           ImportPDFView()
         }
+        NavigationLink("Document OCR") {
+            DocumentOCR()
+        }
       }
       .navigationTitle("Dev")
     }
