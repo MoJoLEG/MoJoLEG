@@ -251,6 +251,7 @@ final class UpstageDocumentParsingService {
       base64Encoding: nil,
       model: model
     )
+    print("[Upstage Response]", dto)
     guard let text = dto.extractedText, !text.isEmpty else {
       throw UpstageDocumentParsingError.emptyText
     }

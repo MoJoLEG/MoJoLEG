@@ -264,7 +264,7 @@ struct ChooseScenarioView: View {
 
   private var navigationTitle: some View {
     HStack {
-      Text("영화 선재")
+      Text("시나리오")
         .font(.system(size: 40, weight: .semibold))
         .foregroundStyle(.gray900)
       Spacer()

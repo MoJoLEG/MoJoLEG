@@ -118,7 +118,7 @@
 				};
 			};
 			buildConfigurationList = E383D65E2E58D3B7000CBCD5 /* Build configuration list for PBXProject "MoJoLEG" */;
-			developmentRegion = en;
+			developmentRegion = ko;
 			hasScannedForEncodings = 0;
 			knownRegions = (
 				en,

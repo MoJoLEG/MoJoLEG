@@ -1,12 +1,12 @@
 {
-  "sourceLanguage" : "en",
+  "sourceLanguage" : "ko",
   "strings" : {
     "%@" : {
 
     },
     "%@/%@" : {
       "localizations" : {
-        "en" : {
+        "ko" : {
           "stringUnit" : {
             "state" : "new",
             "value" : "%1$@/%2$@"
@@ -288,6 +288,9 @@
         }
       }
     },
+    "시나리오" : {
+
+    },
     "시나리오 보기" : {
       "localizations" : {
         "en" : {
@@ -331,6 +334,7 @@
       }
     },
     "영화 선재" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
