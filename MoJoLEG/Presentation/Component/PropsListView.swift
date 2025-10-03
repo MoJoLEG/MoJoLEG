@@ -14,7 +14,7 @@ struct PropsListView: View {
 
   @Binding var isScenarioPresented: Bool
 
-  @Binding var selectedSceneNumber: Int?
+  @Binding var selectedSceneNumber: String?
   @Binding var selectedCategory: PropCategory?
   @Binding var selectedMajorLocation: String?
   @Binding var selectedCharacter: String?
@@ -155,18 +155,18 @@ struct PropsListView: View {
     Menu {
       Picker("씬 번호", selection: $selectedSceneNumber) {
         Text("S#")
-          .tag(nil as Int?)
+          .tag(nil as String?)
         ForEach(
-          scenario.scenes.compactMap { $0.sceneNumber }.sorted(),
+          scenario.scenes.sorted(by: { $0.order < $1.order }).compactMap(\.sceneNumber),
           id: \.self
         ) { sceneNumber in
-          Text(sceneNumber.formatted())
+          Text(sceneNumber)
             .tag(sceneNumber)
         }
       }
     } label: {
       HStack(spacing: 4) {
-        Text(selectedSceneNumber?.formatted() ?? "S#")
+        Text(selectedSceneNumber ?? "S#")
           .lineLimit(1)
         Image(systemName: "chevron.up.chevron.down")
       }
@@ -304,7 +304,7 @@ struct PropsListView: View {
 #Preview("PropsListView") {
   @Previewable @State var isScenarioPresented: Bool = false
 
-  @Previewable @State var selectedSceneNumber: Int? = nil
+  @Previewable @State var selectedSceneNumber: String? = nil
   @Previewable @State var selectedCategory: PropCategory? = nil
   @Previewable @State var selectedMajorLocation: String? = nil
   @Previewable @State var selectedCharacter: String? = nil
@@ -369,7 +369,7 @@ private struct PropsListRowView: View {
   }
 
   private var propSceneNumber: some View {
-    Text(prop.sceneNumber.formatted())
+    Text(prop.sceneNumber)
       .lineLimit(1)
       .frame(width: PropsListConstants.Columns.sceneNumberWidth)
   }

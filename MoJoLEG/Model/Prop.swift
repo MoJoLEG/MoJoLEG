@@ -9,10 +9,10 @@ import Foundation
 import SwiftData
 
 @Model
-class Prop {
+final class Prop {
   var id: UUID
   var isCompleted: Bool
-  var sceneNumber: Int
+  var sceneNumber: String
   private var categoryRawValue: Int
   var category: PropCategory {
     get {
@@ -42,7 +42,7 @@ class Prop {
   init(
     id: UUID,
     isCompleted: Bool,
-    sceneNumber: Int,
+    sceneNumber: String,
     category: PropCategory,
     name: String,
     majorLocation: String,
@@ -73,7 +73,7 @@ extension Prop {
     Prop(
       id: UUID(),
       isCompleted: false,
-      sceneNumber: 1,
+      sceneNumber: "1",
       category: .major,
       name: "책상",
       majorLocation: "상훈의집",
@@ -104,3 +104,5 @@ extension Prop {
     )
   }
 }
+
+extension Prop: Sendable {}

@@ -34,7 +34,7 @@ final class ExcelService {
     let props = scenario.props.sorted(by: { $0.sceneNumber < $1.sceneNumber })
     for (index, prop) in props.enumerated() {
       let isCompleted = prop.isCompleted ? "true" : "false"
-      let sceneNumber = prop.sceneNumber.formatted()
+      let sceneNumber = prop.sceneNumber
       let category = prop.category.toString
       let name = prop.name
       let location =
