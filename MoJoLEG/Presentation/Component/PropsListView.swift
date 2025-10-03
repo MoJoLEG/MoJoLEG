@@ -13,7 +13,7 @@ struct PropsListView: View {
   let props: [Prop]
 
   @Binding var isScenarioPresented: Bool
-  
+
   @Binding var selectedSceneNumber: Int?
   @Binding var selectedCategory: PropCategory?
   @Binding var selectedMajorLocation: String?
@@ -23,6 +23,12 @@ struct PropsListView: View {
 
   @State private var scrollPosition: ScrollPosition = ScrollPosition()
   @State private var scrollViewSize: CGSize = .zero
+  @State private var isPhotoMenuPresented: Bool = false
+  @State private var selectedPropForImageChange: Prop? = nil
+  @State private var isPhotoPickerPresented: Bool = false
+  @State private var pickedPhoto: PhotosPickerItem? = nil
+  @State private var isErrorPresented: Bool = false
+  @State private var error: Error? = nil
 
   var body: some View {
     ScrollView([.horizontal, .vertical]) {
@@ -30,7 +36,11 @@ struct PropsListView: View {
         Section {
           ForEach(props) { prop in
             HStack {
-              PropsListRowView(prop: prop)
+              PropsListRowView(
+                prop: prop,
+                isPhotoMenuPresented: $isPhotoMenuPresented,
+                selectedPropForImageChange: $selectedPropForImageChange,
+              )
               Spacer()
             }
             .id(prop.id)
@@ -64,14 +74,53 @@ struct PropsListView: View {
     .onDisappear {
       UIScrollView.appearance().isDirectionalLockEnabled = false
     }
-    .onChange(of: selectedScene) { oldValue, newValue in
-      if let newValue {
-        scrollTo(scene: newValue)
+    .onChange(of: selectedScene) { _, scene in
+      guard let scene else { return }
+      scrollTo(scene: scene)
+    }
+    .onChange(of: selectedProp) { _, prop in
+      guard let prop else { return }
+      scrollTo(prop: prop)
+    }
+    .alert("사진 설정", isPresented: $isPhotoMenuPresented) {
+      Button("앨범에서 사진 선택") {
+        isPhotoPickerPresented = true
+      }
+      if selectedPropForImageChange?.referenceImage != nil {
+        Button("삭제", role: .destructive) {
+          selectedPropForImageChange?.referenceImage = nil
+        }
+      }
+      Button("취소", role: .cancel) {
+        isPhotoMenuPresented = false
       }
     }
-    .onChange(of: selectedProp) { oldValue, newValue in
-      if let newValue {
-        scrollTo(prop: newValue)
+    .photosPicker(
+      isPresented: $isPhotoPickerPresented,
+      selection: $pickedPhoto
+    )
+    .onChange(of: pickedPhoto) { _, photo in
+      defer {
+        pickedPhoto = nil
+      }
+
+      guard let photo else { return }
+      photo.loadTransferable(type: Data.self) { result in
+        switch result {
+        case .success(let data):
+          selectedPropForImageChange?.referenceImage = data
+        case .failure(let error):
+          isErrorPresented = true
+          self.error = error
+
+          print("Failed to load image: \(error)")
+        }
+      }
+    }
+    .alert("오류", isPresented: $isErrorPresented) {
+      Button("확인") {
+        isErrorPresented = false
+        error = nil
       }
     }
   }
@@ -254,7 +303,7 @@ struct PropsListView: View {
 
 #Preview("PropsListView") {
   @Previewable @State var isScenarioPresented: Bool = false
-  
+
   @Previewable @State var selectedSceneNumber: Int? = nil
   @Previewable @State var selectedCategory: PropCategory? = nil
   @Previewable @State var selectedMajorLocation: String? = nil
@@ -284,9 +333,8 @@ struct PropsListView: View {
 private struct PropsListRowView: View {
   let prop: Prop
 
-  @State private var isPhotoMenuPresented: Bool = false
-  @State private var isPhotoPickerPresented: Bool = false
-  @State private var imageSelection: PhotosPickerItem? = nil
+  @Binding var isPhotoMenuPresented: Bool
+  @Binding var selectedPropForImageChange: Prop?
 
   var body: some View {
     HStack(spacing: 24) {
@@ -321,20 +369,20 @@ private struct PropsListRowView: View {
   }
 
   private var propSceneNumber: some View {
-    Text("\(prop.sceneNumber)")
+    Text(prop.sceneNumber.formatted())
       .lineLimit(1)
       .frame(width: PropsListConstants.Columns.sceneNumberWidth)
   }
 
   private var propCategory: some View {
-    Text("\(prop.category.toString)")
+    Text(prop.category.toString)
       .lineLimit(1)
       .frame(width: PropsListConstants.Columns.propCategoryWidth)
       .background(prop.category.toHighlight)
   }
 
   private var propName: some View {
-    Text("\(prop.name)")
+    Text(prop.name)
       .lineLimit(1)
       .frame(width: PropsListConstants.Columns.propNameWidth)
   }
@@ -346,19 +394,19 @@ private struct PropsListRowView: View {
   }
 
   private var propEnvironment: some View {
-    Text("\(prop.environment.toString)")
+    Text(prop.environment.toString)
       .lineLimit(1)
       .frame(width: PropsListConstants.Columns.propEnvironmentWidth)
   }
 
   private var propCharacter: some View {
-    Text("\(prop.character ?? "")")
+    Text(prop.character ?? "")
       .lineLimit(1)
       .frame(width: PropsListConstants.Columns.propCharacterWidth)
   }
 
   private var propNote: some View {
-    Text("\(prop.note)")
+    Text(prop.note)
       .minimumScaleFactor(0.5)
       .lineLimit(1)
       .frame(width: PropsListConstants.Columns.propNoteWidth)
@@ -387,35 +435,7 @@ private struct PropsListRowView: View {
     .frame(width: PropsListConstants.Columns.propReferenceImageWidth)
     .onTapGesture {
       isPhotoMenuPresented = true
-    }
-    .confirmationDialog(
-      "사진 설정",
-      isPresented: $isPhotoMenuPresented,
-      titleVisibility: .visible
-    ) {
-      Button("앨범에서 사진 선택") {
-        isPhotoPickerPresented = true
-      }
-      Button("삭제", role: .destructive) {
-        prop.referenceImage = nil
-      }
-      .disabled(prop.referenceImage == nil)
-    }
-    .photosPicker(
-      isPresented: $isPhotoPickerPresented,
-      selection: $imageSelection
-    )
-    .onChange(of: imageSelection) { oldValue, newValue in
-      if let newValue {
-        newValue.loadTransferable(type: Data.self) { result in
-          switch result {
-          case .success(let data):
-            prop.referenceImage = data
-          case .failure(let error):
-            print("Failed to load image: \(error)")
-          }
-        }
-      }
+      selectedPropForImageChange = prop
     }
   }
 }
@@ -425,8 +445,16 @@ private struct PropsListRowView: View {
   prop.isCompleted = true
 
   return VStack {
-    PropsListRowView(prop: prop)
-    PropsListRowView(prop: .sample)
+    PropsListRowView(
+      prop: prop,
+      isPhotoMenuPresented: .constant(false),
+      selectedPropForImageChange: .constant(nil),
+    )
+    PropsListRowView(
+      prop: .sample,
+      isPhotoMenuPresented: .constant(false),
+      selectedPropForImageChange: .constant(nil),
+    )
   }
 }
 

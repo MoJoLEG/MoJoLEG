@@ -20,6 +20,12 @@ struct PropsGalleryView: View {
   @Binding var selectedProp: Prop?
 
   @State private var scrollPosition: ScrollPosition = ScrollPosition()
+  @State private var isPhotoMenuPresented: Bool = false
+  @State private var selectedPropForImageChange: Prop? = nil
+  @State private var isPhotoPickerPresented: Bool = false
+  @State private var pickedPhoto: PhotosPickerItem? = nil
+  @State private var isErrorPresented: Bool = false
+  @State private var error: Error? = nil
 
   private let backgroundColor: Color = Color.gray100
 
@@ -32,8 +38,12 @@ struct PropsGalleryView: View {
             spacing: 40
           ) {
             ForEach(props) { prop in
-              PropCardView(prop: prop)
-                .id(prop.id)
+              PropCardView(
+                prop: prop,
+                isPhotoMenuPresented: $isPhotoMenuPresented,
+                selectedPropForImageChange: $selectedPropForImageChange,
+              )
+              .id(prop.id)
             }
           }
           .safeAreaPadding(.horizontal, 40)
@@ -48,14 +58,53 @@ struct PropsGalleryView: View {
     .background(
       backgroundColor
     )
-    .onChange(of: selectedScene) { oldValue, newValue in
-      if let newValue {
-        scrollTo(scene: newValue)
+    .onChange(of: selectedScene) { _, scene in
+      guard let scene else { return }
+      scrollTo(scene: scene)
+    }
+    .onChange(of: selectedProp) { _, prop in
+      guard let prop else { return }
+      scrollTo(prop: prop)
+    }
+    .alert("사진 설정", isPresented: $isPhotoMenuPresented) {
+      Button("앨범에서 사진 선택") {
+        isPhotoPickerPresented = true
+      }
+      if selectedPropForImageChange?.referenceImage != nil {
+        Button("삭제", role: .destructive) {
+          selectedPropForImageChange?.referenceImage = nil
+        }
+      }
+      Button("취소", role: .cancel) {
+        isPhotoMenuPresented = false
       }
     }
-    .onChange(of: selectedProp) { oldValue, newValue in
-      if let newValue {
-        scrollTo(prop: newValue)
+    .photosPicker(
+      isPresented: $isPhotoPickerPresented,
+      selection: $pickedPhoto
+    )
+    .onChange(of: pickedPhoto) { _, photo in
+      defer {
+        pickedPhoto = nil
+      }
+
+      guard let photo else { return }
+      photo.loadTransferable(type: Data.self) { result in
+        switch result {
+        case .success(let data):
+          selectedPropForImageChange?.referenceImage = data
+        case .failure(let error):
+          isErrorPresented = true
+          self.error = error
+
+          print("Failed to load image: \(error)")
+        }
+      }
+    }
+    .alert("오류", isPresented: $isErrorPresented) {
+      Button("확인") {
+        isErrorPresented = false
+        error = nil
       }
     }
   }
@@ -232,6 +281,9 @@ struct PropsGalleryView: View {
 private struct PropCardView: View {
   let prop: Prop
 
+  @Binding var isPhotoMenuPresented: Bool
+  @Binding var selectedPropForImageChange: Prop?
+
   private let height: CGFloat = 360.0
 
   var body: some View {
@@ -243,10 +295,6 @@ private struct PropCardView: View {
     .clipShape(RoundedRectangle(cornerRadius: 20))
   }
 
-  @State private var isPhotoMenuPresented: Bool = false
-  @State private var isPhotoPickerPresented: Bool = false
-  @State private var imageSelection: PhotosPickerItem? = nil
-
   private var cardHeader: some View {
     ZStack {
       Group {
@@ -256,7 +304,6 @@ private struct PropCardView: View {
           Image(uiImage: uiImage)
             .resizable()
             .scaledToFill()
-            .frame(minHeight: 0, maxHeight: .infinity)
         } else {
           Color.gray200
             .overlay {
@@ -266,38 +313,15 @@ private struct PropCardView: View {
             }
         }
       }
-      .onTapGesture {
-        print("Tapped")
-        isPhotoMenuPresented = true
-      }
-      .confirmationDialog(
-        "사진 설정",
-        isPresented: $isPhotoMenuPresented,
-        titleVisibility: .visible
-      ) {
-        Button("앨범에서 사진 선택") {
-          isPhotoPickerPresented = true
-        }
-        Button("삭제", role: .destructive) {
-          prop.referenceImage = nil
-        }
-        .disabled(prop.referenceImage == nil)
-      }
-      .photosPicker(
-        isPresented: $isPhotoPickerPresented,
-        selection: $imageSelection
+      .frame(
+        minWidth: 0,
+        maxWidth: .infinity,
+        minHeight: 0,
+        maxHeight: .infinity
       )
-      .onChange(of: imageSelection) { oldValue, newValue in
-        if let newValue {
-          newValue.loadTransferable(type: Data.self) { result in
-            switch result {
-            case .success(let data):
-              prop.referenceImage = data
-            case .failure(let error):
-              print("Failed to load image: \(error)")
-            }
-          }
-        }
+      .onTapGesture {
+        isPhotoMenuPresented = true
+        selectedPropForImageChange = prop
       }
 
       VStack {
@@ -352,6 +376,7 @@ private struct PropCardView: View {
             .font(.system(size: 25, weight: .semibold))
             .foregroundStyle(.gray900)
             .lineLimit(1)
+            .minimumScaleFactor(0.5)
 
           Spacer()
 
@@ -362,42 +387,17 @@ private struct PropCardView: View {
             .background(prop.category.toHighlight)
         }
 
-        LazyVGrid(
-          columns: [
-            GridItem(.flexible(minimum: 96, maximum: 96)), GridItem(),
-          ],
-          spacing: 8
-        ) {
-          Text("장소")
-            .font(.system(size: 17, weight: .semibold))
-            .foregroundStyle(.gray900)
-            .frame(maxWidth: .infinity, alignment: .leading)
-          Text(prop.majorLocation + (prop.minorLocation.map { "/\($0)" } ?? ""))
-            .font(.system(size: 15))
-            .foregroundStyle(.gray900)
-            .frame(maxWidth: .infinity, alignment: .leading)
-
-          Text("등장인물")
-            .font(.system(size: 17, weight: .semibold))
-            .foregroundStyle(.gray900)
-            .frame(maxWidth: .infinity, alignment: .leading)
-          Text("\(prop.character ?? "")")
-            .font(.system(size: 15))
-            .foregroundStyle(.gray900)
-            .frame(maxWidth: .infinity, alignment: .leading)
-
-          Text("비고")
-            .font(.system(size: 17, weight: .semibold))
-            .foregroundStyle(.gray900)
-            .frame(
-              maxWidth: .infinity,
-              maxHeight: .infinity,
-              alignment: .topLeading
-            )
-          Text(prop.note)
-            .font(.system(size: 15))
-            .foregroundStyle(.gray900)
-            .frame(maxWidth: .infinity, alignment: .leading)
+        VStack(spacing: 8) {
+          cardFooterRow(
+            title: String(localized: "장소"),
+            content: prop.majorLocation
+              + (prop.minorLocation.map { "/\($0)" } ?? "")
+          )
+          cardFooterRow(
+            title: String(localized: "등장인물"),
+            content: prop.character ?? ""
+          )
+          cardFooterRow(title: String(localized: "비고"), content: prop.note)
         }
         .frame(maxHeight: .infinity, alignment: .top)
       }
@@ -405,10 +405,28 @@ private struct PropCardView: View {
     }
     .frame(maxWidth: .infinity, idealHeight: height / 2, maxHeight: height / 2)
   }
+
+  @ViewBuilder
+  private func cardFooterRow(title: String, content: String) -> some View {
+    HStack(alignment: .top) {
+      Text(title)
+        .font(.system(size: 17, weight: .semibold))
+        .frame(width: 80, alignment: .leading)
+      Text(content)
+        .font(.system(size: 15))
+        .minimumScaleFactor(0.5)
+    }
+    .foregroundStyle(.gray900)
+    .frame(maxWidth: .infinity, alignment: .leading)
+  }
 }
 
 #Preview("PropCardView") {
   let prop = Prop.sample
 
-  PropCardView(prop: prop)
+  PropCardView(
+    prop: prop,
+    isPhotoMenuPresented: .constant(false),
+    selectedPropForImageChange: .constant(nil)
+  )
 }

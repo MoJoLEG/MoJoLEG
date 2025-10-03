@@ -1,25 +1,6 @@
 {
   "sourceLanguage" : "ko",
   "strings" : {
-    "-" : {
-
-    },
-    "%@" : {
-
-    },
-    "%@/%@" : {
-      "localizations" : {
-        "ko" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "%1$@/%2$@"
-          }
-        }
-      }
-    },
-    "%lld" : {
-
-    },
     "Add" : {
 
     },
@@ -166,6 +147,7 @@
 
     },
     "개수" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -206,6 +188,7 @@
       }
     },
     "구매가" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -226,6 +209,7 @@
       }
     },
     "담당팀" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -292,6 +276,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Note"
+          }
+        }
+      }
+    },
+    "사진 설정" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Set Photo"
           }
         }
       }
@@ -370,7 +364,24 @@
       }
     },
     "씬 번호" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Scene Number"
+          }
+        }
+      }
+    },
+    "앨범에서 사진 선택" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Choose from Library"
+          }
+        }
+      }
     },
     "영화 선재" : {
       "localizations" : {
@@ -378,6 +389,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Film Materials"
+          }
+        }
+      }
+    },
+    "오류" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Error"
           }
         }
       }
@@ -470,6 +491,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Cancel"
+          }
+        }
+      }
+    },
+    "확인" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "OK"
           }
         }
       }
