@@ -18,8 +18,8 @@ enum ResponseFormat {
             "type": "object",
             "properties": {
               "scene_number": {
-                "type": "number",
-                "description": "씬 번호. 항상 존재해야 함. 정수형."
+                "type": "string",
+                "description": "씬 번호. `S#`은 제외한 숫자."
               },
               "props_type": {
                 "type": "string",

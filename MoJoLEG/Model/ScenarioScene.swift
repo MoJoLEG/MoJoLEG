@@ -12,11 +12,11 @@ import SwiftData
 class ScenarioScene {
   var id: UUID
   var order: Int
-  var sceneNumber: Int?
+  var sceneNumber: String?
   var title: String
   var content: String
 
-  init(id: UUID, order: Int, sceneNumber: Int? = nil, title: String, content: String) {
+  init(id: UUID, order: Int, sceneNumber: String? = nil, title: String, content: String) {
     self.id = id
     self.order = order
     self.sceneNumber = sceneNumber

@@ -16,6 +16,16 @@ struct ScenarioPropsView: View {
 
   let scenario: Scenario
 
+  private var orderMap: [String?: Int] {
+    var map = Dictionary<String?, Int>()
+    
+    for scene in scenario.scenes {
+      map[scene.sceneNumber] = scene.order
+    }
+    
+    return map
+  }
+
   private var filteredProps: [Prop] {
     scenario.props
       .filter { prop in
@@ -25,7 +35,10 @@ struct ScenarioPropsView: View {
           && matchesLocation(prop)
           && matchesCharacter(prop)
       }
-      .sorted(by: { $0.sceneNumber < $1.sceneNumber })
+      .sorted(by: {
+        (orderMap[$0.sceneNumber] ?? Int.max)
+          < (orderMap[$1.sceneNumber] ?? Int.max)
+      })
   }
 
   private func matchesSearch(_ prop: Prop) -> Bool {
@@ -61,7 +74,7 @@ struct ScenarioPropsView: View {
 
   @State private var selectedLayout: PropsLayout = .list
 
-  @State private var selectedSceneNumber: Int? = nil
+  @State private var selectedSceneNumber: String? = nil
   @State private var selectedCategory: PropCategory? = nil
   @State private var selectedMajorLocation: String? = nil
   @State private var selectedCharacter: String? = nil
@@ -153,9 +166,12 @@ struct ScenarioPropsView: View {
             .foregroundStyle(.gray900)
             .padding(.horizontal, 10)
         }
-        ShareLink(item: scenario, preview: SharePreview(scenario.title, image: Image(.logo)))
-          .labelStyle(.iconOnly)
-          .foregroundStyle(.primaryYellow)
+        ShareLink(
+          item: scenario,
+          preview: SharePreview(scenario.title, image: Image(.logo))
+        )
+        .labelStyle(.iconOnly)
+        .foregroundStyle(.primaryYellow)
       }
     }
   }

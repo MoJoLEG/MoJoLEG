@@ -151,9 +151,9 @@ struct ChooseScenarioView: View {
     }
 
     /// 3. Upstage에 씬 분석 요청
-    let responses = await withTaskGroup { group in
+    let props = await withTaskGroup { group in
       for (index, scene) in separated.enumerated() {
-        group.addTask { () -> UpstageResponseDto? in
+        group.addTask { () -> [Prop]? in
           do {
             let request: UpstageRequestDto = await UpstageRequestDto(
               messages: [
@@ -168,42 +168,33 @@ struct ChooseScenarioView: View {
 
             let response: UpstageResponseDto = try await UpstageService.shared
               .request(request)
-            print("Successfully finished processing scene \(index + 1)")
 
-            return response
+            guard let content = response.choices.first?.message.content else { return nil }
+            
+            let props = try await PropDecodeService.shared.decode(content)
+            
+            if separated.indices.contains(index) {
+              separated[index].sceneNumber = props.first?.sceneNumber
+            }
+            print("[\(index)] Successfully finished processing scene \(props.first?.sceneNumber)")
+            
+            return props
           } catch {
             print(
-              "Failed to process scene \(index + 1): \(error.localizedDescription)"
+              "[\(index)] Failed to process scene: \(String(describing: error))"
             )
           }
           return nil
         }
       }
 
-      var result: [UpstageResponseDto] = []
+      var result: [Prop] = []
       for await response in group {
         if let response {
-          result.append(response)
+          result.append(contentsOf: response)
         }
       }
       return result
-    }
-
-    /// 4. 분석한 씬에서 소품 추출
-    var allProps: [Prop] = []
-
-    for response in responses {
-      do {
-        guard let content = response.choices.first?.message.content else {
-          continue
-        }
-
-        let props = try PropDecodeService.shared.decode(content)
-
-        allProps.append(contentsOf: props)
-      } catch {
-        print("Failed to decode prop: \(error.localizedDescription)")
-      }
     }
 
     let lines = extracted.components(separatedBy: .newlines)
@@ -218,7 +209,7 @@ struct ChooseScenarioView: View {
       id: UUID(),
       title: title,
       scenes: separated,
-      props: allProps,
+      props: props,
       isFavorite: false,
       createdAt: Date(),
       updatedAt: Date(),
