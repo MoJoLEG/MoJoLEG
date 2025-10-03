@@ -164,6 +164,9 @@ struct ScenarioPropsView: View {
     Text(scenario.title)
       .font(.system(size: 40, weight: .semibold))
       .foregroundStyle(.gray900)
+      .lineLimit(1)
+      .minimumScaleFactor(0.8)
+      .frame(maxWidth: 480)
   }
 
   private var layoutPicker: some View {

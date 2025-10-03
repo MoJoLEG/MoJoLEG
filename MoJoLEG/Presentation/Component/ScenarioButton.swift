@@ -12,6 +12,7 @@ struct ScenarioButton: View {
   let date: String
   @Binding var isFavorite: Bool
   let action: () -> Void
+  let longPressAction: () -> Void
 
   var body: some View {
     Button {
@@ -32,6 +33,8 @@ struct ScenarioButton: View {
             Text(title)
               .font(.system(size: 20, weight: .semibold))
               .foregroundStyle(.skyBlue)
+              .lineLimit(1)
+              .minimumScaleFactor(0.8)
           }
           Text(date)
             .font(.system(size: 14))
@@ -39,6 +42,11 @@ struct ScenarioButton: View {
         }
       }
     }
+    .buttonStyle(
+      LongPressButtonStyle {
+        longPressAction()
+      }
+    )
   }
 }
 
@@ -48,11 +56,15 @@ struct ScenarioButton: View {
       title: "채집자",
       date: "오늘 오전 8:23",
       isFavorite: .constant(false)
-    ) {}
+    ) {
+    } longPressAction: {
+    }
     ScenarioButton(
       title: "채집자",
       date: "오늘 오전 8:23",
       isFavorite: .constant(true)
-    ) {}
+    ) {
+    } longPressAction: {
+    }
   }
 }

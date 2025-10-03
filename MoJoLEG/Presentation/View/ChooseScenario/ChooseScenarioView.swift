@@ -30,6 +30,8 @@ struct ChooseScenarioView: View {
   @State private var importFileTask: Task<Void, Never>? = nil
   @State private var error: String? = nil
 
+  @State private var longPressedScenario: Scenario? = nil
+
   @Environment(\.editMode) private var editMode
 
   @Namespace private var namespace
@@ -238,9 +240,9 @@ struct ChooseScenarioView: View {
     let targets = scenarios.filter { selectedScenarios.contains($0.id) }
     guard !targets.isEmpty else { return }
     for scenario in targets {
-      let copy = scenario.copy()
-      scenario.title = "\(scenario.title) - 복사"
-      context.insert(copy)
+      let copiedScenario = scenario.copy()
+      copiedScenario.title = "\(copiedScenario.title) - 복사"
+      context.insert(copiedScenario)
     }
     do { try context.save() } catch {
       self.error = "Duplicate save error: \( error.localizedDescription)"
@@ -429,6 +431,59 @@ struct ChooseScenarioView: View {
               } else {
                 selectedScenario = scenario
               }
+            } longPressAction: {
+              longPressedScenario = scenario
+            }
+            .popover(
+              item: Binding(
+                get: {
+                  longPressedScenario == scenario ? scenario : nil
+                },
+                set: {
+                  longPressedScenario = $0
+                }
+              )
+            ) { scenario in
+              VStack {
+                TextField(
+                  "제목을 입력해주세요",
+                  text: Binding(
+                    get: {
+                      scenario.title
+                    },
+                    set: {
+                      scenario.title = $0
+                    }
+                  )
+                )
+                .padding(8)
+
+                Divider()
+
+                ShareLink(item: ExcelService.shared.createExcelFile(scenario)) {
+                  Label("공유", systemImage: "square.and.arrow.up")
+                    .padding(8)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                }
+
+                Button("복제", systemImage: "document.on.document") {
+                  let copiedScenario = scenario.copy()
+                  copiedScenario.title = "\(copiedScenario.title) - 복사"
+                  context.insert(copiedScenario)
+
+                  longPressedScenario = nil
+                }
+                .padding(8)
+                .frame(maxWidth: .infinity, alignment: .leading)
+
+                Button("삭제", systemImage: "trash", role: .destructive) {
+                  context.delete(scenario)
+                }
+                .padding(8)
+                .frame(maxWidth: .infinity, alignment: .leading)
+              }
+              .padding()
+              .frame(idealWidth: 240, maxWidth: 240)
             }
 
             if editMode?.wrappedValue == .active {
@@ -539,10 +594,6 @@ struct ChooseScenarioView: View {
   }
 }
 
-#Preview {
+#Preview(traits: .modifier(PreviewModelContainer())) {
   ChooseScenarioView()
-    .modelContainer(
-      for: [Scenario.self, Prop.self],
-      inMemory: true
-    )
 }
