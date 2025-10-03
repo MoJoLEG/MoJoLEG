@@ -408,7 +408,8 @@ private struct PropsListRowView: View {
   private var propNote: some View {
     Text(prop.note)
       .minimumScaleFactor(0.5)
-      .lineLimit(1)
+      .lineLimit(4)
+      .multilineTextAlignment(.center)
       .frame(width: PropsListConstants.Columns.propNoteWidth)
   }
 
@@ -443,6 +444,8 @@ private struct PropsListRowView: View {
 #Preview("PropsListRowView") {
   let prop = Prop.sample
   prop.isCompleted = true
+  prop.note =
+    "컵 안에 내용물은 무엇일까?글자컵 안에 내용물은 무엇일까?글자컵 안에 내용물은글자컵 안에 내용물은안에 내용물안에 내용물안에 내용물"
 
   return VStack {
     PropsListRowView(

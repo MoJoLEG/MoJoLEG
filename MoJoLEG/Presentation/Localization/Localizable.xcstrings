@@ -4,17 +4,6 @@
     "Add" : {
 
     },
-    "All Items" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "전체 보기"
-          }
-        }
-      }
-    },
     "Delete" : {
 
     },
@@ -146,17 +135,6 @@
     "Use Response Format" : {
 
     },
-    "개수" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Qty"
-          }
-        }
-      }
-    },
     "갤러리뷰" : {
       "localizations" : {
         "en" : {
@@ -187,34 +165,12 @@
         }
       }
     },
-    "구매가" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Cost"
-          }
-        }
-      }
-    },
     "구분" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Type"
-          }
-        }
-      }
-    },
-    "담당팀" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Team"
           }
         }
       }
@@ -235,17 +191,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Reference"
-          }
-        }
-      }
-    },
-    "로고" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Logo"
           }
         }
       }
@@ -310,17 +255,6 @@
         }
       }
     },
-    "소품리스트 모음" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Film Materials"
-          }
-        }
-      }
-    },
     "시나리오 보기" : {
       "localizations" : {
         "en" : {
@@ -331,34 +265,12 @@
         }
       }
     },
-    "시나리오를 분석 중입니다." : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Analyzing Scenario…"
-          }
-        }
-      }
-    },
     "신규 시나리오" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "New Scenario"
-          }
-        }
-      }
-    },
-    "씬 단위로 필요한 소품을 정리하고 있습니다." : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Props are organized by the system on a per-scene basis."
           }
         }
       }
@@ -453,13 +365,12 @@
         }
       }
     },
-    "제작팀" : {
-      "extractionState" : "manual",
+    "제목을 입력해주세요" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Production Team"
+            "value" : "Enter title"
           }
         }
       }
@@ -470,17 +381,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Favorites Items"
-          }
-        }
-      }
-    },
-    "최종 소품리스트를 생성하고 있으니 잠시만 기다려주세요." : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Generating the final props list, please wait a moment."
           }
         }
       }
@@ -506,5 +406,5 @@
       }
     }
   },
-  "version" : "1.0"
+  "version" : "1.1"
 }

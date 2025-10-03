@@ -95,7 +95,7 @@ final class ExcelService {
       cell.value = .text("")
     }
 
-    let path = book.save("소품리스트_\(scenario.title).xlsx")
+    let path = book.save("\(scenario.id.uuidString).xlsx")
 
     let url = URL(fileURLWithPath: path)
 
