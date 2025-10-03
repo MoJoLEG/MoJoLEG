@@ -227,15 +227,24 @@ struct ScenarioPropsView: View {
     .opacity(isSearchBarPresented ? 1.0 : 0.0)
   }
 
+  @ViewBuilder
   private var searchButton: some View {
-    Button {
-      withAnimation {
-        isSearchBarPresented.toggle()
-      }
-    } label: {
-      if isSearchBarPresented {
+    if isSearchBarPresented {
+      Button {
+        withAnimation {
+          searchText = ""
+          isSearchBarPresented = false
+        }
+      } label: {
         Text("취소")
-      } else {
+      }
+
+    } else {
+      Button {
+        withAnimation {
+          isSearchBarPresented = true
+        }
+      } label: {
         Image(systemName: "magnifyingglass")
       }
     }

@@ -372,15 +372,24 @@ struct ChooseScenarioView: View {
     .background(.gray200, in: RoundedRectangle(cornerRadius: 8))
   }
 
+  @ViewBuilder
   private var searchButton: some View {
-    Button {
-      withAnimation {
-        isSearchBarPresented.toggle()
-      }
-    } label: {
-      if isSearchBarPresented {
+    if isSearchBarPresented {
+      Button {
+        withAnimation {
+          searchText = ""
+          isSearchBarPresented = false
+        }
+      } label: {
         Text("취소")
-      } else {
+      }
+
+    } else {
+      Button {
+        withAnimation {
+          isSearchBarPresented = true
+        }
+      } label: {
         Image(systemName: "magnifyingglass")
       }
     }
