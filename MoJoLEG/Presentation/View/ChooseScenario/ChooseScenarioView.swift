@@ -460,7 +460,7 @@ struct ChooseScenarioView: View {
 
                 Divider()
 
-                ShareLink(item: ExcelService.shared.createExcelFile(scenario)) {
+                ShareLink(item: scenario, preview: SharePreview(scenario.title, image: Image(.logo))) {
                   Label("공유", systemImage: "square.and.arrow.up")
                     .padding(8)
                     .frame(maxWidth: .infinity, alignment: .leading)
@@ -559,21 +559,15 @@ struct ChooseScenarioView: View {
 
           // Center - 공유
           ShareLink(
-            items: {
-              let targets = scenarios.filter({
-                selectedScenarios.contains($0.id)
-              })
-              return targets.map({
-                ExcelService.shared.createExcelFile($0)
-              })
-            }()
+            items: scenarios.filter { selectedScenarios.contains($0.id) }
           ) {
-            Label("공유", systemImage: "circle.fill")
+            SharePreview($0.title, image: Image(.logo))
+          } label: {
+            Text("공유")
+              .foregroundStyle(
+                selectedScenarios.count > 0 ? .primaryYellow : .gray600
+              )
           }
-          .labelStyle(.titleOnly)
-          .foregroundStyle(
-            selectedScenarios.count > 0 ? .primaryYellow : .gray600
-          )
           .disabled(selectedScenarios.isEmpty)
 
           Spacer()

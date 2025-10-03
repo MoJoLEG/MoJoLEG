@@ -153,7 +153,7 @@ struct ScenarioPropsView: View {
             .foregroundStyle(.gray900)
             .padding(.horizontal, 10)
         }
-        ShareLink(item: ExcelService.shared.createExcelFile(scenario))
+        ShareLink(item: scenario, preview: SharePreview(scenario.title, image: Image(.logo)))
           .labelStyle(.iconOnly)
           .foregroundStyle(.primaryYellow)
       }
