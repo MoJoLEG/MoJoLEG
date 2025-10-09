@@ -8,7 +8,7 @@
 import CoreImage.CIFilterBuiltins
 import QuartzCore
 import SwiftUI
-import UIKit
+internal import UIKit
 
 public enum VariableBlurDirection {
   case blurredTopClearBottom

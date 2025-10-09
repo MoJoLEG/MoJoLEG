@@ -1,25 +1,6 @@
 {
   "sourceLanguage" : "ko",
   "strings" : {
-    "%@" : {
-
-    },
-    "%@/%@" : {
-      "localizations" : {
-        "ko" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "%1$@/%2$@"
-          }
-        }
-      }
-    },
-    "%lf" : {
-
-    },
-    "%lld" : {
-
-    },
     "Add" : {
 
     },

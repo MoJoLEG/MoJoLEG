@@ -17,11 +17,11 @@ struct LoadingView: View {
     var toString: String {
       switch self {
       case .first:
-        String(localized: .loadingText1)
+        String(localized: "LoadingText1")
       case .second:
-        String(localized: .loadingText2)
+        String(localized: "LoadingText2")
       case .third:
-        String(localized: .loadingText3)
+        String(localized: "LoadingText3")
       }
     }
 
