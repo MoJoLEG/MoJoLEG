@@ -205,6 +205,16 @@
         }
       }
     },
+    "모두 지우기" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Clear All"
+          }
+        }
+      }
+    },
     "복제" : {
       "localizations" : {
         "en" : {
@@ -261,6 +271,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "View Scenario"
+          }
+        }
+      }
+    },
+    "시나리오를 삭제하시겠습니까?" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Are you sure you want to delete the selected scenarios?"
           }
         }
       }
@@ -331,6 +351,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Name"
+          }
+        }
+      }
+    },
+    "이름 변경" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rename"
           }
         }
       }

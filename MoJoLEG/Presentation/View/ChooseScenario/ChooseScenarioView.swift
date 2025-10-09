@@ -29,8 +29,8 @@ struct ChooseScenarioView: View {
   @State private var selectedScenario: Scenario? = nil
   @State private var importFileTask: Task<Void, Never>? = nil
   @State private var error: String? = nil
-
-  @State private var longPressedScenario: Scenario? = nil
+  @State private var showDeleteConfirmation: Bool = false
+  @State private var editingScenario: Scenario? = nil
 
   @Environment(\.editMode) private var editMode
 
@@ -77,6 +77,9 @@ struct ChooseScenarioView: View {
             }
         }
       }
+      .onTapGesture {
+        editingScenario = nil
+      }
       .navigationDestination(item: $selectedScenario) { scenario in
         ScenarioPropsView(scenario: scenario)
       }
@@ -116,6 +119,12 @@ struct ChooseScenarioView: View {
       } message: {
         if let error {
           Text(error)
+        }
+      }
+      .alert("시나리오를 삭제하시겠습니까?", isPresented: $showDeleteConfirmation) {
+        Button("취소", role: .cancel) {}
+        Button("삭제", role: .destructive) {
+          deleteSelectedScenarios()
         }
       }
     }
@@ -169,15 +178,19 @@ struct ChooseScenarioView: View {
             let response: UpstageResponseDto = try await UpstageService.shared
               .request(request)
 
-            guard let content = response.choices.first?.message.content else { return nil }
-            
+            guard let content = response.choices.first?.message.content else {
+              return nil
+            }
+
             let props = try await PropDecodeService.shared.decode(content)
-            
+
             if separated.indices.contains(index) {
               separated[index].sceneNumber = props.first?.sceneNumber
             }
-            print("[\(index)] Successfully finished processing scene \(props.first?.sceneNumber)")
-            
+            print(
+              "[\(index)] Successfully finished processing scene \(String(describing: props.first?.sceneNumber))"
+            )
+
             return props
           } catch {
             print(
@@ -229,24 +242,40 @@ struct ChooseScenarioView: View {
 
   private func duplicateSelectedScenarios() {
     let targets = scenarios.filter { selectedScenarios.contains($0.id) }
+
     guard !targets.isEmpty else { return }
+
     for scenario in targets {
-      let copiedScenario = scenario.copy()
-      copiedScenario.title = "\(copiedScenario.title) - 복사"
-      context.insert(copiedScenario)
+      duplicateScenario(scenario)
     }
-    do { try context.save() } catch {
-      self.error = "Duplicate save error: \( error.localizedDescription)"
+
+    do {
+      try context.save()
+    } catch {
+      self.error = "Duplicate save error: \(String(describing: error))"
     }
     selectedScenarios.removeAll()
   }
 
+  private func duplicateScenario(_ scenario: Scenario) {
+    let copiedScenario = scenario.copy()
+    copiedScenario.title = "\(copiedScenario.title) - 복사"
+    context.insert(copiedScenario)
+  }
+
   private func deleteSelectedScenarios() {
     let targets = scenarios.filter { selectedScenarios.contains($0.id) }
+
     guard !targets.isEmpty else { return }
-    for t in targets { context.delete(t) }
-    do { try context.save() } catch {
-      self.error = "Delete save error: \( error.localizedDescription)"
+
+    for t in targets {
+      context.delete(t)
+    }
+
+    do {
+      try context.save()
+    } catch {
+      self.error = "Delete save error: \(String(describing: error))"
     }
     selectedScenarios.removeAll()
   }
@@ -335,9 +364,9 @@ struct ChooseScenarioView: View {
         .padding(.trailing, 20)
       }
       Button(editMode?.wrappedValue == .active ? "완료" : "선택") {
+        selectedScenarios.removeAll()
         if editMode?.wrappedValue == .active {
           editMode?.wrappedValue = .inactive
-          selectedScenarios.removeAll()
         } else {
           editMode?.wrappedValue = .active
         }
@@ -400,7 +429,15 @@ struct ChooseScenarioView: View {
         ForEach(filteredScenarios) { scenario in
           ZStack(alignment: .center) {
             ScenarioButton(
-              title: scenario.title,
+              title: Binding(
+                get: {
+                  scenario.title
+                },
+                set: { newValue in
+                  scenario.title = newValue
+                  try? context.save()
+                }
+              ),
               date: scenario.updatedAt.formatted(
                 date: .numeric,
                 time: .omitted
@@ -410,6 +447,16 @@ struct ChooseScenarioView: View {
                 set: { newValue in
                   scenario.isFavorite = newValue
                   try? context.save()
+                }
+              ),
+              isEditMode: Binding(
+                get: {
+                  editingScenario == scenario
+                },
+                set: { newValue in
+                  if newValue == false {
+                    editingScenario = nil
+                  }
                 }
               )
             ) {
@@ -422,59 +469,26 @@ struct ChooseScenarioView: View {
               } else {
                 selectedScenario = scenario
               }
-            } longPressAction: {
-              longPressedScenario = scenario
             }
-            .popover(
-              item: Binding(
-                get: {
-                  longPressedScenario == scenario ? scenario : nil
-                },
-                set: {
-                  longPressedScenario = $0
-                }
-              )
-            ) { scenario in
-              VStack {
-                TextField(
-                  "제목을 입력해주세요",
-                  text: Binding(
-                    get: {
-                      scenario.title
-                    },
-                    set: {
-                      scenario.title = $0
-                    }
-                  )
-                )
-                .padding(8)
-
-                Divider()
-
-                ShareLink(item: scenario, preview: SharePreview(scenario.title, image: Image(.logo))) {
-                  Label("공유", systemImage: "square.and.arrow.up")
-                    .padding(8)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                }
-
-                Button("복제", systemImage: "document.on.document") {
-                  let copiedScenario = scenario.copy()
-                  copiedScenario.title = "\(copiedScenario.title) - 복사"
-                  context.insert(copiedScenario)
-
-                  longPressedScenario = nil
-                }
-                .padding(8)
-                .frame(maxWidth: .infinity, alignment: .leading)
-
-                Button("삭제", systemImage: "trash", role: .destructive) {
-                  context.delete(scenario)
-                }
-                .padding(8)
-                .frame(maxWidth: .infinity, alignment: .leading)
+            .contextMenu {
+              Button("이름 변경", systemImage: "pencil") {
+                editingScenario = scenario
               }
-              .padding()
-              .frame(idealWidth: 240, maxWidth: 240)
+              ShareLink(
+                item: scenario,
+                preview: SharePreview(scenario.title, image: Image(.logo))
+              ) {
+                Label("공유", systemImage: "square.and.arrow.up")
+                  .padding(8)
+                  .frame(maxWidth: .infinity, alignment: .leading)
+              }
+              Button("복제", systemImage: "document.on.document") {
+                duplicateScenario(scenario)
+              }
+              Button("삭제", systemImage: "trash", role: .destructive) {
+                selectedScenarios.insert(scenario.id)
+                showDeleteConfirmation = true
+              }
             }
 
             if editMode?.wrappedValue == .active {
@@ -565,7 +579,7 @@ struct ChooseScenarioView: View {
 
           // Right - 삭제
           Button(role: .destructive) {
-            deleteSelectedScenarios()
+            showDeleteConfirmation = true
           } label: {
             Text("삭제")
               .foregroundStyle(
