@@ -19,83 +19,58 @@ final class ExcelService {
 
     let sheet = book.NewSheet("Props")
 
-    var cell = sheet.AddCell(XCoords(row: 1, col: 1))
-    cell.value = .text("완료")
+    let header = [
+      "완료", "S#", "구분", "이름", "장소", "I/E", "등장인물", "비고", "개수", "구매가",
+      "레퍼런스 이미지", "담당팀",
+    ]
+    for (index, column) in header.enumerated() {
+      sheet.ForColumnSetWidth(1 + index, 80)
 
-    cell = sheet.AddCell(XCoords(row: 1, col: 2))
-    cell.value = .text("S#")
-
-    cell = sheet.AddCell(XCoords(row: 1, col: 3))
-    cell.value = .text("구분")
-
-    cell = sheet.AddCell(XCoords(row: 1, col: 4))
-    cell.value = .text("이름")
-
-    cell = sheet.AddCell(XCoords(row: 1, col: 5))
-    cell.value = .text("장소")
-
-    cell = sheet.AddCell(XCoords(row: 1, col: 6))
-    cell.value = .text("I/E")
-
-    cell = sheet.AddCell(XCoords(row: 1, col: 7))
-    cell.value = .text("등장인물")
-
-    cell = sheet.AddCell(XCoords(row: 1, col: 8))
-    cell.value = .text("비고")
-
-    cell = sheet.AddCell(XCoords(row: 1, col: 9))
-    cell.value = .text("개수")
-
-    cell = sheet.AddCell(XCoords(row: 1, col: 10))
-    cell.value = .text("구매가")
-
-    cell = sheet.AddCell(XCoords(row: 1, col: 11))
-    cell.value = .text("레퍼런스 이미지")
-
-    cell = sheet.AddCell(XCoords(row: 1, col: 12))
-    cell.value = .text("담당팀")
-
-    for (index, prop) in scenario.props.sorted(by: {
-      $0.sceneNumber < $1.sceneNumber
-    }).enumerated() {
-      cell = sheet.AddCell(XCoords(row: 2 + index, col: 1))
-      cell.value = .text(prop.isCompleted ? "true" : "false")
-
-      cell = sheet.AddCell(XCoords(row: 2 + index, col: 2))
-      cell.value = .text("\(prop.sceneNumber)")
-
-      cell = sheet.AddCell(XCoords(row: 2 + index, col: 3))
-      cell.value = .text(prop.category.toString)
-
-      cell = sheet.AddCell(XCoords(row: 2 + index, col: 4))
-      cell.value = .text(prop.name)
-
-      cell = sheet.AddCell(XCoords(row: 2 + index, col: 5))
-      cell.value = .text("\(prop.majorLocation)/\(prop.minorLocation ?? "n/a")")
-
-      cell = sheet.AddCell(XCoords(row: 2 + index, col: 6))
-      cell.value = .text(prop.environment.toString)
-
-      cell = sheet.AddCell(XCoords(row: 2 + index, col: 7))
-      cell.value = .text(prop.character ?? "n/a")
-
-      cell = sheet.AddCell(XCoords(row: 2 + index, col: 8))
-      cell.value = .text(prop.note)
-
-      cell = sheet.AddCell(XCoords(row: 2 + index, col: 9))
-      cell.value = .text("\(prop.count ?? 0)")
-
-      cell = sheet.AddCell(XCoords(row: 2 + index, col: 10))
-      cell.value = .text("\(prop.price ?? 0)")
-
-      cell = sheet.AddCell(XCoords(row: 2 + index, col: 11))
-      cell.value = .text("n/a")
-
-      cell = sheet.AddCell(XCoords(row: 2 + index, col: 12))
-      cell.value = .text(prop.responsibleTeam ?? "")
+      let cell = sheet.AddCell(XCoords(row: 1, col: 1 + index))
+      cell.value = .text(column)
+      cell.Cols(txt: .black, bg: .yellow)
     }
 
-    let path = book.save("소품리스트_\(scenario.title).xlsx")
+    let props = scenario.props.sorted(by: { $0.sceneNumber < $1.sceneNumber })
+    for (index, prop) in props.enumerated() {
+      let isCompleted = prop.isCompleted ? "true" : "false"
+      let sceneNumber = prop.sceneNumber
+      let category = prop.category.toString
+      let name = prop.name
+      let location =
+        prop.majorLocation + (prop.minorLocation.map { "/\($0)" } ?? "")
+      let environment = prop.environment.toString
+      let character = prop.character ?? ""
+      let note = prop.note
+      let quantity = "0"
+      let price = "0"
+      let referenceImage = prop.referenceImage
+      let team = ""
+
+      let items: [Any?] = [
+        isCompleted, sceneNumber, category, name, location, environment,
+        character, note, quantity, price, referenceImage, team,
+      ]
+
+      for (col, item) in items.enumerated() {
+        let cell = sheet.AddCell(XCoords(row: 2 + index, col: 1 + col))
+        switch item {
+        case let text as String:
+          cell.value = .text(text)
+        case let image as Data:
+          guard let imageClass = ImageClass(data: image) else { continue }
+          guard let xImage = XImage(with: imageClass) else { continue }
+          let key = XImages.append(with: xImage)
+          cell.value = .icon(
+            XImageCell(key: key, size: CGSize(width: 20, height: 20))
+          )
+        default:
+          break
+        }
+      }
+    }
+
+    let path = book.save("\(scenario.id.uuidString).xlsx")
 
     let url = URL(fileURLWithPath: path)
 

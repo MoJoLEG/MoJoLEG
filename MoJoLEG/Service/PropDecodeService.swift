@@ -34,7 +34,7 @@ final class PropDecodeService {
 // MARK: - Prop DTO
 
 struct PropDto: Decodable {
-  let sceneNumber: Int
+  let sceneNumber: String
   let propsType: String?
   let propsName: String
   let majorLocation: String

@@ -23,17 +23,6 @@
     "Add" : {
 
     },
-    "All Items" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "전체 보기"
-          }
-        }
-      }
-    },
     "Delete" : {
 
     },
@@ -64,8 +53,56 @@
     "Import PDF" : {
 
     },
-    "n/a" : {
-
+    "LoadingText1" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Analyzing the scenario."
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "시나리오를 분석 중입니다."
+          }
+        }
+      }
+    },
+    "LoadingText2" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Organizing necessary props by scene."
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "씬 단위로 필요한 소품을 정리하고 있습니다."
+          }
+        }
+      }
+    },
+    "LoadingText3" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Finalizing the props list, please wait a moment."
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "최종 소품리스트를 생성하고 있으니 잠시만 기다려주세요."
+          }
+        }
+      }
     },
     "No file selected" : {
 
@@ -102,7 +139,7 @@
     "S#" : {
 
     },
-    "S#%lld" : {
+    "S#%@" : {
 
     },
     "Search" : {
@@ -125,16 +162,6 @@
     },
     "Use Response Format" : {
 
-    },
-    "개수" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Qty"
-          }
-        }
-      }
     },
     "갤러리뷰" : {
       "localizations" : {
@@ -166,32 +193,12 @@
         }
       }
     },
-    "구매가" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Cost"
-          }
-        }
-      }
-    },
     "구분" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Type"
-          }
-        }
-      }
-    },
-    "담당팀" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Team"
           }
         }
       }
@@ -212,17 +219,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Reference"
-          }
-        }
-      }
-    },
-    "로고" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Logo"
           }
         }
       }
@@ -253,6 +249,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Note"
+          }
+        }
+      }
+    },
+    "사진 설정" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Set Photo"
           }
         }
       }
@@ -301,17 +307,6 @@
         }
       }
     },
-    "시나리오를 분석 중입니다." : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Analyzing Scenario…"
-          }
-        }
-      }
-    },
     "신규 시나리오" : {
       "localizations" : {
         "en" : {
@@ -322,13 +317,22 @@
         }
       }
     },
-    "씬 단위로 필요한 소품을 정리하고 있습니다." : {
-      "extractionState" : "manual",
+    "씬 번호" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Props are organized by the system on a per-scene basis."
+            "value" : "Scene Number"
+          }
+        }
+      }
+    },
+    "앨범에서 사진 선택" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Choose from Library"
           }
         }
       }
@@ -340,6 +344,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Film Materials"
+          }
+        }
+      }
+    },
+    "오류" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Error"
           }
         }
       }
@@ -394,13 +408,12 @@
         }
       }
     },
-    "제작팀" : {
-      "extractionState" : "manual",
+    "제목을 입력해주세요" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Production Team"
+            "value" : "Enter title"
           }
         }
       }
@@ -415,17 +428,6 @@
         }
       }
     },
-    "최종 소품리스트를 생성하고 있으니 잠시만 기다려주세요." : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Generating the final props list, please wait a moment."
-          }
-        }
-      }
-    },
     "취소" : {
       "localizations" : {
         "en" : {
@@ -435,7 +437,17 @@
           }
         }
       }
+    },
+    "확인" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "OK"
+          }
+        }
+      }
     }
   },
-  "version" : "1.0"
+  "version" : "1.1"
 }

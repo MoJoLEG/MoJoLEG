@@ -9,27 +9,40 @@ import Foundation
 import SwiftData
 
 @Model
-class Prop {
+final class Prop {
   var id: UUID
   var isCompleted: Bool
-  var sceneNumber: Int
-  var category: PropCategory
+  var sceneNumber: String
+  private var categoryRawValue: Int
+  var category: PropCategory {
+    get {
+      PropCategory(rawValue: categoryRawValue) ?? .uncategorized
+    }
+    set {
+      categoryRawValue = newValue.rawValue
+    }
+  }
   var name: String
   var majorLocation: String
   var minorLocation: String?
-  var environment: PropEnvironment
+  private var environmentRawValue: Int
+  var environment: PropEnvironment {
+    get {
+      PropEnvironment(rawValue: environmentRawValue) ?? .interior
+    }
+    set {
+      environmentRawValue = newValue.rawValue
+    }
+  }
   var character: String?
   var note: String
-  var count: Int?
-  var price: Double?
   var referenceImage: Data?
-  var responsibleTeam: String?
   var originalText: String
 
   init(
     id: UUID,
     isCompleted: Bool,
-    sceneNumber: Int,
+    sceneNumber: String,
     category: PropCategory,
     name: String,
     majorLocation: String,
@@ -37,26 +50,20 @@ class Prop {
     environment: PropEnvironment,
     character: String? = nil,
     note: String,
-    count: Int? = nil,
-    price: Double? = nil,
     referenceImage: Data? = nil,
-    responsibleTeam: String? = nil,
     originalText: String
   ) {
     self.id = id
     self.isCompleted = isCompleted
     self.sceneNumber = sceneNumber
-    self.category = category
+    self.categoryRawValue = category.rawValue
     self.name = name
     self.majorLocation = majorLocation
     self.minorLocation = minorLocation
-    self.environment = environment
+    self.environmentRawValue = environment.rawValue
     self.character = character
     self.note = note
-    self.count = count
-    self.price = price
     self.referenceImage = referenceImage
-    self.responsibleTeam = responsibleTeam
     self.originalText = originalText
   }
 }
@@ -66,7 +73,7 @@ extension Prop {
     Prop(
       id: UUID(),
       isCompleted: false,
-      sceneNumber: 1,
+      sceneNumber: "1",
       category: .major,
       name: "책상",
       majorLocation: "상훈의집",
@@ -92,11 +99,10 @@ extension Prop {
       environment: environment,
       character: character,
       note: note,
-      count: count,
-      price: price,
       referenceImage: referenceImage,
-      responsibleTeam: responsibleTeam,
       originalText: originalText
     )
   }
 }
+
+extension Prop: Sendable {}

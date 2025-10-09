@@ -15,7 +15,7 @@ final class PDFService {
 
   func highlightScenario(in document: PDFDocument, scenario: Scenario) {
     var cursor: PDFSelection? = nil
-    var sceneSelections: [Int: PDFSelection] = [:]
+    var sceneSelections: [String: PDFSelection] = [:]
 
     for scene in scenario.scenes.sorted(by: { $0.order < $1.order }) {
       if let selection = document.findString(

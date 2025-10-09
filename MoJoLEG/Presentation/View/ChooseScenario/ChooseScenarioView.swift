@@ -30,25 +30,26 @@ struct ChooseScenarioView: View {
   @State private var importFileTask: Task<Void, Never>? = nil
   @State private var error: String? = nil
 
+  @State private var longPressedScenario: Scenario? = nil
+
   @Environment(\.editMode) private var editMode
 
   @Namespace private var namespace
 
   private var filteredScenarios: [Scenario] {
-    let base: [Scenario]
-    switch scenarioFilterState {
-    case .all:
-      base = scenarios
-    case .favorite:
-      base = scenarios.filter { $0.isFavorite }
+    scenarios.filter {
+      matchesFavorite($0)
+        && matchesSearch($0)
     }
-    if searchText.isEmpty {
-      return base
-    } else {
-      return base.filter {
-        $0.title.localizedCaseInsensitiveContains(searchText)
-      }
-    }
+  }
+
+  private func matchesFavorite(_ scenario: Scenario) -> Bool {
+    scenarioFilterState == .all || scenario.isFavorite
+  }
+
+  private func matchesSearch(_ scenario: Scenario) -> Bool {
+    !isSearchBarPresented || searchText.isEmpty
+      || scenario.title.localizedCaseInsensitiveContains(searchText)
   }
 
   var body: some View {
@@ -57,13 +58,15 @@ struct ChooseScenarioView: View {
         background
 
         VStack {
-          navigationTitle
+          VStack(spacing: 24) {
+            navigationTitle
 
-          topToolbar
+            topToolbar
+          }
+          .padding([.top, .horizontal], 40)
 
           scenarioList
         }
-        .padding(40)
 
         if isLoadingViewPresented {
           LoadingView()
@@ -75,7 +78,7 @@ struct ChooseScenarioView: View {
         }
       }
       .navigationDestination(item: $selectedScenario) { scenario in
-        PropListView(scenario: scenario)
+        ScenarioPropsView(scenario: scenario)
       }
       .toolbar {
         bottomToolbar
@@ -148,9 +151,9 @@ struct ChooseScenarioView: View {
     }
 
     /// 3. Upstage에 씬 분석 요청
-    let responses = await withTaskGroup { group in
+    let props = await withTaskGroup { group in
       for (index, scene) in separated.enumerated() {
-        group.addTask { () -> UpstageResponseDto? in
+        group.addTask { () -> [Prop]? in
           do {
             let request: UpstageRequestDto = await UpstageRequestDto(
               messages: [
@@ -165,42 +168,33 @@ struct ChooseScenarioView: View {
 
             let response: UpstageResponseDto = try await UpstageService.shared
               .request(request)
-            print("Successfully finished processing scene \(index + 1)")
 
-            return response
+            guard let content = response.choices.first?.message.content else { return nil }
+            
+            let props = try await PropDecodeService.shared.decode(content)
+            
+            if separated.indices.contains(index) {
+              separated[index].sceneNumber = props.first?.sceneNumber
+            }
+            print("[\(index)] Successfully finished processing scene \(props.first?.sceneNumber)")
+            
+            return props
           } catch {
             print(
-              "Failed to process scene \(index + 1): \(error.localizedDescription)"
+              "[\(index)] Failed to process scene: \(String(describing: error))"
             )
           }
           return nil
         }
       }
 
-      var result: [UpstageResponseDto] = []
+      var result: [Prop] = []
       for await response in group {
         if let response {
-          result.append(response)
+          result.append(contentsOf: response)
         }
       }
       return result
-    }
-
-    /// 4. 분석한 씬에서 소품 추출
-    var allProps: [Prop] = []
-
-    for response in responses {
-      do {
-        guard let content = response.choices.first?.message.content else {
-          continue
-        }
-
-        let props = try PropDecodeService.shared.decode(content)
-
-        allProps.append(contentsOf: props)
-      } catch {
-        print("Failed to decode prop: \(error.localizedDescription)")
-      }
     }
 
     let lines = extracted.components(separatedBy: .newlines)
@@ -208,14 +202,14 @@ struct ChooseScenarioView: View {
     if let firstLine = lines.first, !firstLine.isEmpty {
       title = firstLine
     }
-    
+
     let pdfFile = try? Data(contentsOf: url)
 
     let scenario = Scenario(
       id: UUID(),
       title: title,
       scenes: separated,
-      props: allProps,
+      props: props,
       isFavorite: false,
       createdAt: Date(),
       updatedAt: Date(),
@@ -237,9 +231,9 @@ struct ChooseScenarioView: View {
     let targets = scenarios.filter { selectedScenarios.contains($0.id) }
     guard !targets.isEmpty else { return }
     for scenario in targets {
-      let copy = scenario.copy()
-      scenario.title = "\(scenario.title) - 복사"
-      context.insert(copy)
+      let copiedScenario = scenario.copy()
+      copiedScenario.title = "\(copiedScenario.title) - 복사"
+      context.insert(copiedScenario)
     }
     do { try context.save() } catch {
       self.error = "Duplicate save error: \( error.localizedDescription)"
@@ -269,7 +263,6 @@ struct ChooseScenarioView: View {
         .foregroundStyle(.gray900)
       Spacer()
     }
-    .padding(.bottom, 24)
   }
 
   private var topToolbar: some View {
@@ -288,13 +281,14 @@ struct ChooseScenarioView: View {
         searchButton
       }
     }
-    .padding(.bottom, 48)
   }
 
   private var scenarioFilter: some View {
     HStack {
       Button {
-        scenarioFilterState = .all
+        withAnimation {
+          scenarioFilterState = .all
+        }
       } label: {
         Text("전체보기")
           .foregroundStyle(scenarioFilterState == .all ? .white : .gray900)
@@ -305,11 +299,14 @@ struct ChooseScenarioView: View {
               Capsule()
                 .fill(.primaryYellow)
                 .matchedGeometryEffect(id: "LayoutBackground", in: namespace)
+                .shadow(color: .black.opacity(0.1), radius: 4, y: 2)
             }
           }
       }
       Button {
-        scenarioFilterState = .favorite
+        withAnimation {
+          scenarioFilterState = .favorite
+        }
       } label: {
         Text("즐겨찾기")
           .foregroundStyle(scenarioFilterState == .favorite ? .white : .gray900)
@@ -320,6 +317,7 @@ struct ChooseScenarioView: View {
               Capsule()
                 .fill(.primaryYellow)
                 .matchedGeometryEffect(id: "LayoutBackground", in: namespace)
+                .shadow(color: .black.opacity(0.1), radius: 4, y: 2)
             }
           }
       }
@@ -367,15 +365,24 @@ struct ChooseScenarioView: View {
     .background(.gray200, in: RoundedRectangle(cornerRadius: 8))
   }
 
+  @ViewBuilder
   private var searchButton: some View {
-    Button {
-      withAnimation {
-        isSearchBarPresented.toggle()
-      }
-    } label: {
-      if isSearchBarPresented {
+    if isSearchBarPresented {
+      Button {
+        withAnimation {
+          searchText = ""
+          isSearchBarPresented = false
+        }
+      } label: {
         Text("취소")
-      } else {
+      }
+
+    } else {
+      Button {
+        withAnimation {
+          isSearchBarPresented = true
+        }
+      } label: {
         Image(systemName: "magnifyingglass")
       }
     }
@@ -415,6 +422,59 @@ struct ChooseScenarioView: View {
               } else {
                 selectedScenario = scenario
               }
+            } longPressAction: {
+              longPressedScenario = scenario
+            }
+            .popover(
+              item: Binding(
+                get: {
+                  longPressedScenario == scenario ? scenario : nil
+                },
+                set: {
+                  longPressedScenario = $0
+                }
+              )
+            ) { scenario in
+              VStack {
+                TextField(
+                  "제목을 입력해주세요",
+                  text: Binding(
+                    get: {
+                      scenario.title
+                    },
+                    set: {
+                      scenario.title = $0
+                    }
+                  )
+                )
+                .padding(8)
+
+                Divider()
+
+                ShareLink(item: scenario, preview: SharePreview(scenario.title, image: Image(.logo))) {
+                  Label("공유", systemImage: "square.and.arrow.up")
+                    .padding(8)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                }
+
+                Button("복제", systemImage: "document.on.document") {
+                  let copiedScenario = scenario.copy()
+                  copiedScenario.title = "\(copiedScenario.title) - 복사"
+                  context.insert(copiedScenario)
+
+                  longPressedScenario = nil
+                }
+                .padding(8)
+                .frame(maxWidth: .infinity, alignment: .leading)
+
+                Button("삭제", systemImage: "trash", role: .destructive) {
+                  context.delete(scenario)
+                }
+                .padding(8)
+                .frame(maxWidth: .infinity, alignment: .leading)
+              }
+              .padding()
+              .frame(idealWidth: 240, maxWidth: 240)
             }
 
             if editMode?.wrappedValue == .active {
@@ -439,6 +499,18 @@ struct ChooseScenarioView: View {
           .frame(maxWidth: 200, maxHeight: .infinity, alignment: .top)
         }
       }
+    }
+    .safeAreaPadding(40)
+    .overlay(alignment: .top) {
+      VariableBlurView(maxBlurRadius: 8)
+        .frame(height: 40)
+
+      LinearGradient(
+        colors: [Color.gray100, Color.clear],
+        startPoint: .top,
+        endPoint: .bottom
+      )
+      .frame(height: 40)
     }
   }
 
@@ -468,7 +540,9 @@ struct ChooseScenarioView: View {
             duplicateSelectedScenarios()
           } label: {
             Text("복제")
-                  .foregroundStyle(selectedScenarios.count > 0 ? .primaryYellow : .gray600)
+              .foregroundStyle(
+                selectedScenarios.count > 0 ? .primaryYellow : .gray600
+              )
           }
           .disabled(selectedScenarios.isEmpty)
 
@@ -476,19 +550,15 @@ struct ChooseScenarioView: View {
 
           // Center - 공유
           ShareLink(
-            items: {
-              let targets = scenarios.filter({
-                selectedScenarios.contains($0.id)
-              })
-              return targets.map({
-                ExcelService.shared.createExcelFile($0)
-              })
-            }())
-            {
-                Label("공유", systemImage: "circle.fill")
-            }
-          .labelStyle(.titleOnly)
-          .foregroundStyle(selectedScenarios.count > 0 ? .primaryYellow : .gray600)
+            items: scenarios.filter { selectedScenarios.contains($0.id) }
+          ) {
+            SharePreview($0.title, image: Image(.logo))
+          } label: {
+            Text("공유")
+              .foregroundStyle(
+                selectedScenarios.count > 0 ? .primaryYellow : .gray600
+              )
+          }
           .disabled(selectedScenarios.isEmpty)
 
           Spacer()
@@ -497,8 +567,10 @@ struct ChooseScenarioView: View {
           Button(role: .destructive) {
             deleteSelectedScenarios()
           } label: {
-              Text("삭제")
-              .foregroundStyle(selectedScenarios.count > 0 ? .primaryYellow : .gray600)
+            Text("삭제")
+              .foregroundStyle(
+                selectedScenarios.count > 0 ? .primaryYellow : .gray600
+              )
           }
           .disabled(selectedScenarios.isEmpty)
         }
@@ -507,10 +579,6 @@ struct ChooseScenarioView: View {
   }
 }
 
-#Preview {
+#Preview(traits: .modifier(PreviewModelContainer())) {
   ChooseScenarioView()
-    .modelContainer(
-      for: [Scenario.self, Prop.self],
-      inMemory: true
-    )
 }

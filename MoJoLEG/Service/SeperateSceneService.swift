@@ -37,12 +37,12 @@ final class SeperateSceneService {
           if !content.isEmpty {
             // Use previous match header as title and extract number
             var titleLine = ""
-            var number: Int? = nil
+            var number: String? = nil
             if index > 0 {
               let prevMatch = matches[index - 1]
               let prevRange = Range(prevMatch.range, in: scenario)!
               titleLine = String(scenario[prevRange]).trimmingCharacters(in: .whitespacesAndNewlines)
-              number = Int(titleLine.filter { $0.isNumber })
+              number = titleLine.filter { $0.isNumber }
             } else {
               // No previous match, so no title or number
               titleLine = ""
@@ -71,7 +71,7 @@ final class SeperateSceneService {
         // Split first line as title
         let lines = lastScene.components(separatedBy: .newlines)
         let titleLine = lines.first ?? ""
-        let number = Int(titleLine.filter { $0.isNumber })
+        let number = titleLine.filter { $0.isNumber }
         let scene = ScenarioScene(
           id: UUID(),
           order: order,
