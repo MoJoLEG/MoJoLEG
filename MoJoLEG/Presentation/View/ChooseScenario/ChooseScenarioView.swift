@@ -10,6 +10,13 @@ import SwiftUI
 internal import UniformTypeIdentifiers
 
 struct ChooseScenarioView: View {
+  private struct ScenarioAlert: Identifiable {
+    let id = UUID()
+    let title: String
+    let message: String
+    let shouldPopToRoot: Bool
+  }
+
   enum ScenarioFilterState {
     case all
     case favorite
@@ -28,7 +35,7 @@ struct ChooseScenarioView: View {
 
   @State private var selectedScenario: Scenario? = nil
   @State private var importFileTask: Task<Void, Never>? = nil
-  @State private var error: String? = nil
+  @State private var alertContent: ScenarioAlert? = nil
 
   @State private var longPressedScenario: Scenario? = nil
 
@@ -102,31 +109,32 @@ struct ChooseScenarioView: View {
           print(error.localizedDescription)
         }
       }
-      .alert(
-        "Error",
-        isPresented: Binding(
-          get: {
-            error != nil
-          },
-          set: { _, _ in
-            error = nil
+      .alert(item: $alertContent) { alert in
+        Alert(
+          title: Text(alert.title),
+          message: Text(alert.message),
+          dismissButton: .default(Text("확인")) {
+            if alert.shouldPopToRoot {
+              selectedScenario = nil
+            }
           }
         )
-      ) {
-      } message: {
-        if let error {
-          Text(error)
-        }
       }
     }
   }
 
   private func loadScenario(_ url: URL) async {
-    editMode?.wrappedValue = .inactive
-    isLoadingViewPresented = true
+    await MainActor.run {
+      editMode?.wrappedValue = .inactive
+      isLoadingViewPresented = true
+    }
 
     defer {
-      isLoadingViewPresented = false
+      Task {
+        await MainActor.run {
+          isLoadingViewPresented = false
+        }
+      }
     }
 
     /// 1. PDF에서 텍스트 추출
@@ -136,7 +144,15 @@ struct ChooseScenarioView: View {
     )
 
     guard let extracted, !extracted.isEmpty else {
-      print("Failed to extract text from PDF")
+      await presentRecognitionFailureAlert()
+      return
+    }
+
+    let trimmedCount = extracted.trimmingCharacters(in: .whitespacesAndNewlines)
+      .count
+
+    guard trimmedCount > 1500 else {
+      await presentRecognitionFailureAlert()
       return
     }
 
@@ -216,15 +232,22 @@ struct ChooseScenarioView: View {
       pdfFile: pdfFile
     )
 
-    context.insert(scenario)
+    await MainActor.run {
+      context.insert(scenario)
 
-    do {
-      try context.save()
-    } catch {
-      print("Failed to save data: \( error.localizedDescription)")
+      do {
+        try context.save()
+      } catch {
+        alertContent = ScenarioAlert(
+          title: "Error",
+          message: "Failed to save data: \(error.localizedDescription)",
+          shouldPopToRoot: false
+        )
+        return
+      }
+
+      selectedScenario = scenario
     }
-
-    selectedScenario = scenario
   }
 
   private func duplicateSelectedScenarios() {
@@ -236,7 +259,11 @@ struct ChooseScenarioView: View {
       context.insert(copiedScenario)
     }
     do { try context.save() } catch {
-      self.error = "Duplicate save error: \( error.localizedDescription)"
+      alertContent = ScenarioAlert(
+        title: "Error",
+        message: "Duplicate save error: \( error.localizedDescription)",
+        shouldPopToRoot: false
+      )
     }
     selectedScenarios.removeAll()
   }
@@ -246,9 +273,24 @@ struct ChooseScenarioView: View {
     guard !targets.isEmpty else { return }
     for t in targets { context.delete(t) }
     do { try context.save() } catch {
-      self.error = "Delete save error: \( error.localizedDescription)"
+      alertContent = ScenarioAlert(
+        title: "Error",
+        message: "Delete save error: \( error.localizedDescription)",
+        shouldPopToRoot: false
+      )
     }
     selectedScenarios.removeAll()
+  }
+
+  @MainActor
+  private func presentRecognitionFailureAlert() {
+    isLoadingViewPresented = false
+    selectedScenario = nil
+    alertContent = ScenarioAlert(
+      title: "오류가 발생했습니다",
+      message: "시나리오가 제대로 인식되지 않았습니다.",
+      shouldPopToRoot: true
+    )
   }
 
   private var background: some View {
