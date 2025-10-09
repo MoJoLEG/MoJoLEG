@@ -175,6 +175,17 @@
         }
       }
     },
+    "대도구" : {
+      "generatesSymbol" : false,
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Major"
+          }
+        }
+      }
+    },
     "등장인물" : {
       "localizations" : {
         "en" : {
@@ -211,6 +222,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Clear All"
+          }
+        }
+      }
+    },
+    "미분류" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Uncategorized"
           }
         }
       }
@@ -261,6 +282,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Select"
+          }
+        }
+      }
+    },
+    "소도구" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Minor"
           }
         }
       }

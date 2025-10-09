@@ -35,11 +35,11 @@ final class ExcelService {
     for (index, prop) in props.enumerated() {
       let isCompleted = prop.isCompleted ? "true" : "false"
       let sceneNumber = prop.sceneNumber
-      let category = prop.category.toString
+      let category = prop.category.description
       let name = prop.name
       let location =
         prop.majorLocation + (prop.minorLocation.map { "/\($0)" } ?? "")
-      let environment = prop.environment.toString
+      let environment = prop.environment.description
       let character = prop.character ?? ""
       let note = prop.note
       let quantity = "0"
