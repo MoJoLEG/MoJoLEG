@@ -30,7 +30,7 @@ struct ChooseScenarioView: View {
   @State private var importFileTask: Task<Void, Never>? = nil
   @State private var error: String? = nil
   @State private var showDeleteConfirmation: Bool = false
-  @State private var editingScenario: Scenario? = nil
+  @FocusState private var focusedScenario: UUID?
 
   @Environment(\.editMode) private var editMode
 
@@ -78,7 +78,7 @@ struct ChooseScenarioView: View {
         }
       }
       .onTapGesture {
-        editingScenario = nil
+        focusedScenario = nil
       }
       .navigationDestination(item: $selectedScenario) { scenario in
         ScenarioPropsView(scenario: scenario)
@@ -429,50 +429,15 @@ struct ChooseScenarioView: View {
         ForEach(filteredScenarios) { scenario in
           ZStack(alignment: .center) {
             ScenarioButton(
-              title: Binding(
-                get: {
-                  scenario.title
-                },
-                set: { newValue in
-                  scenario.title = newValue
-                  try? context.save()
-                }
-              ),
-              date: scenario.updatedAt.formatted(
-                date: .numeric,
-                time: .omitted
-              ),
-              isFavorite: Binding(
-                get: { scenario.isFavorite },
-                set: { newValue in
-                  scenario.isFavorite = newValue
-                  try? context.save()
-                }
-              ),
-              isEditMode: Binding(
-                get: {
-                  editingScenario == scenario
-                },
-                set: { newValue in
-                  if newValue == false {
-                    editingScenario = nil
-                  }
-                }
-              )
+              scenario: scenario,
+              focused: $focusedScenario,
             ) {
-              if editMode?.wrappedValue == .active {
-                if selectedScenarios.contains(scenario.id) {
-                  selectedScenarios.remove(scenario.id)
-                } else {
-                  selectedScenarios.insert(scenario.id)
-                }
-              } else {
-                selectedScenario = scenario
-              }
+              focusedScenario = nil
+              selectedScenario = scenario
             }
             .contextMenu {
               Button("이름 변경", systemImage: "pencil") {
-                editingScenario = scenario
+                focusedScenario = scenario.id
               }
               ShareLink(
                 item: scenario,
@@ -490,24 +455,32 @@ struct ChooseScenarioView: View {
                 showDeleteConfirmation = true
               }
             }
+            .disabled(editMode?.wrappedValue.isEditing == true)
 
-            if editMode?.wrappedValue == .active {
-              Circle()
-                .strokeBorder(Color.white, lineWidth: 2)
-                .background(
-                  selectedScenarios.contains(scenario.id)
-                    ? Circle().fill(Color.accentColor)
-                    : Circle().fill(Color.clear)
-                )
-                .frame(width: 25, height: 25)
-                .overlay(
-                  Image(systemName: "checkmark")
-                    .foregroundColor(.white)
-                    .font(.system(size: 12, weight: .bold))
-                    .opacity(selectedScenarios.contains(scenario.id) ? 1 : 0)
-                )
-                .padding(8)
-                .padding(.top, 20)
+            if editMode?.wrappedValue.isEditing == true {
+              ZStack {
+                Color.clear
+
+                Image(systemName: "circle")
+                  .foregroundStyle(.gray200)
+                  .background {
+                    if selectedScenarios.contains(scenario.id) {
+                      Image(systemName: "checkmark.circle.fill")
+                        .symbolRenderingMode(.palette)
+                        .foregroundStyle(.gray200, .accent)
+                    }
+                  }
+                  .font(.title)
+                  .padding(.top, 20)
+              }
+              .contentShape(Rectangle())
+              .onTapGesture {
+                if selectedScenarios.contains(scenario.id) {
+                  selectedScenarios.remove(scenario.id)
+                } else {
+                  selectedScenarios.insert(scenario.id)
+                }
+              }
             }
           }
           .frame(maxWidth: 200, maxHeight: .infinity, alignment: .top)

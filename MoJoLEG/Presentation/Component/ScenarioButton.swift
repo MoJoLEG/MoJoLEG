@@ -8,11 +8,11 @@
 import SwiftUI
 
 struct ScenarioButton: View {
-  @Binding var title: String
-  let date: String
-  @Binding var isFavorite: Bool
-  @Binding var isEditMode: Bool
+  let scenario: Scenario
+  @FocusState.Binding var focused: UUID?
   let action: () -> Void
+
+  @State private var title: String = ""
 
   var body: some View {
     Button {
@@ -23,37 +23,44 @@ struct ScenarioButton: View {
 
         ZStack {
           detail
-            .opacity(isEditMode ? 0.0 : 1.0)
-
-          if isEditMode {
-            titleEditor
-          }
+            .opacity(focused == scenario.id ? 0.0 : 1.0)
+          titleEditor
+            .opacity(focused == scenario.id ? 1.0 : 0.0)
         }
-        .animation(.default, value: isEditMode)
+        .animation(.default, value: focused)
       }
     }
   }
 
   private var icon: some View {
-    Image("Box")
+    Image(.box)
       .resizable()
       .scaledToFit()
   }
 
   private var detail: some View {
-    VStack(spacing: 6) {
+    let title = scenario.title
+    let date = scenario.updatedAt.formatted(
+      date: .numeric,
+      time: .omitted
+    )
+
+    return VStack(spacing: 6) {
       HStack {
         Button {
-          isFavorite.toggle()
+          scenario.isFavorite.toggle()
         } label: {
-          Image(systemName: isFavorite ? "star.fill" : "star")
-            .foregroundColor(isFavorite ? .red : .gray)
+          Image(systemName: scenario.isFavorite ? "star.fill" : "star")
+            .foregroundColor(scenario.isFavorite ? .red : .gray)
         }
         Text(title)
           .font(.system(size: 20, weight: .semibold))
           .foregroundStyle(.skyBlue)
           .lineLimit(1)
           .minimumScaleFactor(0.8)
+          .onTapGesture {
+            focused = scenario.id
+          }
       }
       Text(date)
         .font(.system(size: 14))
@@ -64,11 +71,22 @@ struct ScenarioButton: View {
   private var titleEditor: some View {
     HStack {
       TextField("제목을 입력해주세요", text: $title)
+        .foregroundStyle(.black)
         .multilineTextAlignment(.leading)
+        .focused($focused, equals: scenario.id)
         .onSubmit {
-          isEditMode = false
+          focused = nil
         }
-      if !title.isEmpty {
+        .onChange(of: focused) { oldValue, newValue in
+          if newValue == scenario.id {
+            title = scenario.title
+          } else {
+            if title.isEmpty == false {
+              scenario.title = title
+            }
+          }
+        }
+      if title.isEmpty == false {
         Button("모두 지우기", systemImage: "xmark.circle.fill") {
           title = ""
         }
@@ -81,18 +99,16 @@ struct ScenarioButton: View {
 }
 
 #Preview {
+  @Previewable @FocusState var focused: UUID?
+
   HStack {
     ScenarioButton(
-      title: .constant("채집자"),
-      date: "오늘 오전 8:23",
-      isFavorite: .constant(false),
-      isEditMode: .constant(false),
+      scenario: .sample,
+      focused: $focused,
     ) {}
     ScenarioButton(
-      title: .constant("채집자"),
-      date: "오늘 오전 8:23",
-      isFavorite: .constant(true),
-      isEditMode: .constant(true),
+      scenario: .sample,
+      focused: $focused,
     ) {}
   }
 }
