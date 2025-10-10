@@ -10,7 +10,7 @@
     "Dev" : {
 
     },
-    "Error" : {
+    "Document OCR" : {
 
     },
     "ExcelExport" : {
@@ -82,10 +82,16 @@
         }
       }
     },
+    "No file selected" : {
+
+    },
     "Not Use Response Format" : {
 
     },
     "Open file" : {
+
+    },
+    "Open PDF" : {
 
     },
     "Original" : {
@@ -255,6 +261,20 @@
         }
       }
     },
+    "소품리스트 모음" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Film Materials"
+          }
+        }
+      }
+    },
+    "시나리오" : {
+
+    },
     "시나리오 보기" : {
       "localizations" : {
         "en" : {
@@ -296,6 +316,7 @@
       }
     },
     "영화 선재" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {

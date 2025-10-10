@@ -7,7 +7,7 @@
 
 import Foundation
 import SwiftXLSX
-import UIKit
+internal import UIKit
 
 final class ExcelService {
   static let shared = ExcelService()
