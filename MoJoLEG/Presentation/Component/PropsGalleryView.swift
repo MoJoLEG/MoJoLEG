@@ -158,11 +158,9 @@ struct PropsGalleryView: View {
       HStack(spacing: 4) {
         Text(selectedSceneNumber ?? "S#")
           .lineLimit(1)
-          .foregroundStyle(
-            selectedSceneNumber != nil ? .primaryYellow : .gray900
-          )
         Image(systemName: "chevron.up.chevron.down")
       }
+      .foregroundStyle(selectedSceneNumber != nil ? .primaryYellow : .gray900)
     }
   }
 
