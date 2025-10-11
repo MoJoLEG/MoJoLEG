@@ -292,26 +292,22 @@
         }
       }
     },
-    "소품리스트 모음" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Film Materials"
-          }
-        }
-      }
-    },
-    "시나리오" : {
-
-    },
     "소도구" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Minor"
+          }
+        }
+      }
+    },
+    "시나리오" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Scenarios"
           }
         }
       }
@@ -362,17 +358,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Choose from Library"
-          }
-        }
-      }
-    },
-    "영화 선재" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Film Materials"
           }
         }
       }

@@ -141,7 +141,7 @@ private extension String {
 
 // MARK: - Response DTO
 
-struct UpstageDocumentParsingResponseDto: Decodable, Sendable {
+nonisolated struct UpstageDocumentParsingResponseDto: Decodable, Sendable {
   let raw: [String: DocAnyCodable]
 
   init(from decoder: Decoder) throws {
