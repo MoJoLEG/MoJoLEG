@@ -58,6 +58,9 @@ struct PropsGalleryView: View {
     .background(
       backgroundColor
     )
+    .onChange(of: props) { _, _ in
+      scrollPosition.scrollTo(edge: .top)
+    }
     .onChange(of: selectedScene) { _, scene in
       guard let scene else { return }
       scrollTo(scene: scene)
@@ -147,7 +150,9 @@ struct PropsGalleryView: View {
         Text("S#")
           .tag(nil as String?)
         ForEach(
-          scenario.scenes.sorted(by: { $0.order < $1.order }).compactMap(\.sceneNumber),
+          scenario.scenes.sorted(by: { $0.order < $1.order }).compactMap(
+            \.sceneNumber
+          ),
           id: \.self
         ) { sceneNumber in
           Text(sceneNumber)
