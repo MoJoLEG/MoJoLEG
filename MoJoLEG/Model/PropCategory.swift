@@ -13,15 +13,15 @@ enum PropCategory: Int, Codable, CaseIterable {
   case uncategorized
 }
 
-extension PropCategory {
-  var toString: String {
+extension PropCategory: CustomStringConvertible {
+  var description: String {
     switch self {
     case .major:
-      "대도구"
+      String(localized: "대도구")
     case .minor:
-      "소도구"
+      String(localized: "소도구")
     case .uncategorized:
-      "미분류"
+      String(localized: "미분류")
     }
   }
 }

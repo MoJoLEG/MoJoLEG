@@ -181,13 +181,13 @@ struct PropsListView: View {
         Text("구분")
           .tag(nil as PropCategory?)
         ForEach(PropCategory.allCases, id: \.self) { category in
-          Text(category.toString)
+          Text(category.description)
             .tag(category)
         }
       }
     } label: {
       HStack(spacing: 4) {
-        Text(selectedCategory?.toString ?? "구분")
+        Text(selectedCategory?.description ?? String(localized: "구분"))
           .lineLimit(1)
         Image(systemName: "chevron.up.chevron.down")
       }
@@ -217,7 +217,7 @@ struct PropsListView: View {
       }
     } label: {
       HStack(spacing: 4) {
-        Text(selectedMajorLocation ?? "장소")
+        Text(selectedMajorLocation ?? String(localized: "장소"))
           .lineLimit(1)
         Image(systemName: "chevron.up.chevron.down")
       }
@@ -247,7 +247,7 @@ struct PropsListView: View {
       }
     } label: {
       HStack(spacing: 4) {
-        Text(selectedCharacter ?? "등장인물")
+        Text(selectedCharacter ?? String(localized: "등장인물"))
           .lineLimit(1)
         Image(systemName: "chevron.up.chevron.down")
       }
@@ -375,7 +375,7 @@ private struct PropsListRowView: View {
   }
 
   private var propCategory: some View {
-    Text(prop.category.toString)
+    Text(prop.category.description)
       .lineLimit(1)
       .frame(width: PropsListConstants.Columns.propCategoryWidth)
       .background(prop.category.toHighlight)
@@ -394,7 +394,7 @@ private struct PropsListRowView: View {
   }
 
   private var propEnvironment: some View {
-    Text(prop.environment.toString)
+    Text(prop.environment.description)
       .lineLimit(1)
       .frame(width: PropsListConstants.Columns.propEnvironmentWidth)
   }

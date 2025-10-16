@@ -158,11 +158,9 @@ struct PropsGalleryView: View {
       HStack(spacing: 4) {
         Text(selectedSceneNumber ?? "S#")
           .lineLimit(1)
-          .foregroundStyle(
-            selectedSceneNumber != nil ? .primaryYellow : .gray900
-          )
         Image(systemName: "chevron.up.chevron.down")
       }
+      .foregroundStyle(selectedSceneNumber != nil ? .primaryYellow : .gray900)
     }
   }
 
@@ -172,13 +170,13 @@ struct PropsGalleryView: View {
         Text("구분")
           .tag(nil as PropCategory?)
         ForEach(PropCategory.allCases, id: \.self) { category in
-          Text(category.toString)
+          Text(category.description)
             .tag(category)
         }
       }
     } label: {
       HStack(spacing: 4) {
-        Text(selectedCategory?.toString ?? "구분")
+        Text(selectedCategory?.description ?? String(localized: "구분"))
           .lineLimit(1)
         Image(systemName: "chevron.up.chevron.down")
       }
@@ -201,7 +199,7 @@ struct PropsGalleryView: View {
       }
     } label: {
       HStack(spacing: 4) {
-        Text(selectedMajorLocation ?? "장소")
+        Text(selectedMajorLocation ?? String(localized: "장소"))
           .lineLimit(1)
         Image(systemName: "chevron.up.chevron.down")
       }
@@ -224,7 +222,7 @@ struct PropsGalleryView: View {
       }
     } label: {
       HStack(spacing: 4) {
-        Text(selectedCharacter ?? "등장인물")
+        Text(selectedCharacter ?? String(localized: "등장인물"))
           .lineLimit(1)
         Image(systemName: "chevron.up.chevron.down")
       }
@@ -380,7 +378,7 @@ private struct PropCardView: View {
 
           Spacer()
 
-          Text(prop.category.toString)
+          Text(prop.category.description)
             .foregroundStyle(.gray900)
             .lineLimit(1)
             .frame(width: 54)

@@ -10,8 +10,8 @@ enum PropEnvironment: Int, Codable {
   case exterior
 }
 
-extension PropEnvironment {
-  var toString: String {
+extension PropEnvironment: CustomStringConvertible {
+  var description: String {
     switch self {
     case .interior:
       "I"

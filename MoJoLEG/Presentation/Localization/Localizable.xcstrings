@@ -181,6 +181,17 @@
         }
       }
     },
+    "대도구" : {
+      "generatesSymbol" : false,
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Major"
+          }
+        }
+      }
+    },
     "등장인물" : {
       "localizations" : {
         "en" : {
@@ -207,6 +218,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "List View"
+          }
+        }
+      }
+    },
+    "모두 지우기" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Clear All"
+          }
+        }
+      }
+    },
+    "미분류" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "None"
           }
         }
       }
@@ -261,19 +292,25 @@
         }
       }
     },
-    "소품리스트 모음" : {
-      "extractionState" : "stale",
+    "소도구" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Film Materials"
+            "value" : "Minor"
           }
         }
       }
     },
     "시나리오" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Scenarios"
+          }
+        }
+      }
     },
     "시나리오 보기" : {
       "localizations" : {
@@ -281,6 +318,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "View Scenario"
+          }
+        }
+      }
+    },
+    "시나리오를 삭제하시겠습니까?" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Are you sure you want to delete the selected scenarios?"
           }
         }
       }
@@ -315,17 +362,6 @@
         }
       }
     },
-    "영화 선재" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Film Materials"
-          }
-        }
-      }
-    },
     "오류" : {
       "localizations" : {
         "en" : {
@@ -352,6 +388,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Name"
+          }
+        }
+      }
+    },
+    "이름 변경" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rename"
           }
         }
       }
