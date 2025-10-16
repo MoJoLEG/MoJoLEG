@@ -38,6 +38,7 @@ struct PropsListView: View {
             HStack {
               PropsListRowView(
                 prop: prop,
+                minWidth: scrollViewSize.width - 80,
                 isPhotoMenuPresented: $isPhotoMenuPresented,
                 selectedPropForImageChange: $selectedPropForImageChange,
               )
@@ -145,13 +146,17 @@ struct PropsListView: View {
     .foregroundStyle(.gray900)
     .padding(.vertical, 10)
     .padding(.horizontal, 28)
+    .frame(minWidth: scrollViewSize.width - 80)
     .background(.white, in: RoundedRectangle(cornerRadius: 12))
   }
 
   private var headerCompleted: some View {
     Image(systemName: "checkmark.circle.fill")
       .lineLimit(1)
-      .frame(width: PropsListConstants.Columns.completedWidth)
+      .frame(
+        minWidth: PropsListConstants.Columns.completedWidth,
+        maxWidth: .infinity
+      )
   }
 
   private var headerSceneNumber: some View {
@@ -176,7 +181,10 @@ struct PropsListView: View {
         Image(systemName: "chevron.up.chevron.down")
       }
       .foregroundStyle(selectedSceneNumber != nil ? .primaryYellow : .gray900)
-      .frame(width: PropsListConstants.Columns.sceneNumberWidth)
+      .frame(
+        minWidth: PropsListConstants.Columns.sceneNumberWidth,
+        maxWidth: .infinity
+      )
     }
   }
 
@@ -197,14 +205,20 @@ struct PropsListView: View {
         Image(systemName: "chevron.up.chevron.down")
       }
       .foregroundStyle(selectedCategory != nil ? .primaryYellow : .gray900)
-      .frame(width: PropsListConstants.Columns.propCategoryWidth)
+      .frame(
+        minWidth: PropsListConstants.Columns.propCategoryWidth,
+        maxWidth: .infinity
+      )
     }
   }
 
   private var headerPropName: some View {
     Text("이름")
       .lineLimit(1)
-      .frame(width: PropsListConstants.Columns.propNameWidth)
+      .frame(
+        minWidth: PropsListConstants.Columns.propNameWidth,
+        maxWidth: .infinity
+      )
   }
 
   private var headerMajorLocation: some View {
@@ -227,14 +241,20 @@ struct PropsListView: View {
         Image(systemName: "chevron.up.chevron.down")
       }
       .foregroundStyle(selectedMajorLocation != nil ? .primaryYellow : .gray900)
-      .frame(width: PropsListConstants.Columns.propLocationWidth)
+      .frame(
+        minWidth: PropsListConstants.Columns.propLocationWidth,
+        maxWidth: .infinity
+      )
     }
   }
 
   private var headerPropEnvironment: some View {
     Text("I/E")
       .lineLimit(1)
-      .frame(width: PropsListConstants.Columns.propEnvironmentWidth)
+      .frame(
+        minWidth: PropsListConstants.Columns.propEnvironmentWidth,
+        maxWidth: .infinity
+      )
   }
 
   private var headerCharacter: some View {
@@ -257,20 +277,29 @@ struct PropsListView: View {
         Image(systemName: "chevron.up.chevron.down")
       }
       .foregroundStyle(selectedCharacter != nil ? .primaryYellow : .gray900)
-      .frame(width: PropsListConstants.Columns.propCharacterWidth)
+      .frame(
+        minWidth: PropsListConstants.Columns.propCharacterWidth,
+        maxWidth: .infinity
+      )
     }
   }
 
   private var headerPropNote: some View {
     Text("비고")
       .lineLimit(1)
-      .frame(width: PropsListConstants.Columns.propNoteWidth)
+      .frame(
+        minWidth: PropsListConstants.Columns.propNoteWidth,
+        maxWidth: .infinity
+      )
   }
 
   private var headerReferenceImage: some View {
     Text("레퍼런스 이미지")
       .lineLimit(1)
-      .frame(width: PropsListConstants.Columns.propReferenceImageWidth)
+      .frame(
+        minWidth: PropsListConstants.Columns.propReferenceImageWidth,
+        maxWidth: .infinity
+      )
   }
 
   private func scrollTo(scene: ScenarioScene) {
@@ -337,6 +366,7 @@ struct PropsListView: View {
 
 private struct PropsListRowView: View {
   let prop: Prop
+  let minWidth: CGFloat?
 
   @Binding var isPhotoMenuPresented: Bool
   @Binding var selectedPropForImageChange: Prop?
@@ -357,6 +387,7 @@ private struct PropsListRowView: View {
     .foregroundStyle(prop.isCompleted ? .gray600 : .gray900)
     .padding(.vertical, 8)
     .padding(.horizontal, 28)
+    .frame(minWidth: minWidth)
     .background(
       prop.isCompleted ? .gray300 : .white,
       in: RoundedRectangle(cornerRadius: 12)
@@ -369,45 +400,66 @@ private struct PropsListRowView: View {
     } label: {
       Image(systemName: prop.isCompleted ? "checkmark.circle.fill" : "circle")
         .foregroundStyle(prop.isCompleted ? .primaryYellow : .gray900)
-        .frame(width: PropsListConstants.Columns.completedWidth)
+        .frame(
+          minWidth: PropsListConstants.Columns.completedWidth,
+          maxWidth: .infinity
+        )
     }
   }
 
   private var propSceneNumber: some View {
     Text(prop.sceneNumber)
       .lineLimit(1)
-      .frame(width: PropsListConstants.Columns.sceneNumberWidth)
+      .frame(
+        minWidth: PropsListConstants.Columns.sceneNumberWidth,
+        maxWidth: .infinity
+      )
   }
 
   private var propCategory: some View {
     Text(prop.category.description)
       .lineLimit(1)
-      .frame(width: PropsListConstants.Columns.propCategoryWidth)
+      .frame(
+        minWidth: PropsListConstants.Columns.propCategoryWidth,
+        maxWidth: .infinity
+      )
       .background(prop.category.toHighlight)
   }
 
   private var propName: some View {
     Text(prop.name)
       .lineLimit(1)
-      .frame(width: PropsListConstants.Columns.propNameWidth)
+      .frame(
+        minWidth: PropsListConstants.Columns.propNameWidth,
+        maxWidth: .infinity
+      )
   }
 
   private var propLocation: some View {
     Text(prop.majorLocation + (prop.minorLocation.map { "/\($0)" } ?? ""))
       .lineLimit(1)
-      .frame(width: PropsListConstants.Columns.propLocationWidth)
+      .frame(
+        minWidth: PropsListConstants.Columns.propLocationWidth,
+        maxWidth: .infinity
+      )
   }
 
   private var propEnvironment: some View {
     Text(prop.environment.description)
       .lineLimit(1)
-      .frame(width: PropsListConstants.Columns.propEnvironmentWidth)
+      .frame(
+        minWidth: PropsListConstants.Columns.propEnvironmentWidth,
+        maxWidth: .infinity
+      )
   }
 
   private var propCharacter: some View {
     Text(prop.character ?? "")
       .lineLimit(1)
-      .frame(width: PropsListConstants.Columns.propCharacterWidth)
+      .frame(
+        minWidth: PropsListConstants.Columns.propCharacterWidth,
+        maxWidth: .infinity
+      )
   }
 
   private var propNote: some View {
@@ -415,7 +467,10 @@ private struct PropsListRowView: View {
       .minimumScaleFactor(0.5)
       .lineLimit(4)
       .multilineTextAlignment(.center)
-      .frame(width: PropsListConstants.Columns.propNoteWidth)
+      .frame(
+        minWidth: PropsListConstants.Columns.propNoteWidth,
+        maxWidth: .infinity
+      )
   }
 
   private var propReferenceImage: some View {
@@ -438,7 +493,10 @@ private struct PropsListRowView: View {
       height: PropsListConstants.propReferenceImageMaxHeight
     )
     .clipShape(RoundedRectangle(cornerRadius: 8))
-    .frame(width: PropsListConstants.Columns.propReferenceImageWidth)
+    .frame(
+      minWidth: PropsListConstants.Columns.propReferenceImageWidth,
+      maxWidth: .infinity
+    )
     .onTapGesture {
       isPhotoMenuPresented = true
       selectedPropForImageChange = prop
@@ -455,11 +513,13 @@ private struct PropsListRowView: View {
   return VStack {
     PropsListRowView(
       prop: prop,
+      minWidth: .zero,
       isPhotoMenuPresented: .constant(false),
       selectedPropForImageChange: .constant(nil),
     )
     PropsListRowView(
       prop: .sample,
+      minWidth: .zero,
       isPhotoMenuPresented: .constant(false),
       selectedPropForImageChange: .constant(nil),
     )
