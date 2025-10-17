@@ -35,30 +35,23 @@ struct PropsListView: View {
       LazyVStack(pinnedViews: .sectionHeaders) {
         Section {
           ForEach(props) { prop in
-            HStack {
-              PropsListRowView(
-                prop: prop,
-                minWidth: scrollViewSize.width - 80,
-                isPhotoMenuPresented: $isPhotoMenuPresented,
-                selectedPropForImageChange: $selectedPropForImageChange,
-              )
-              Spacer()
-            }
+            PropsListRowView(
+              prop: prop,
+              minWidth: scrollViewSize.width - 80,
+              isPhotoMenuPresented: $isPhotoMenuPresented,
+              selectedPropForImageChange: $selectedPropForImageChange,
+            )
             .id(prop.id)
           }
         } header: {
-          HStack {
-            header
-            Spacer()
-          }
-          .id("__header__")
+          header
+            .id("__header__")
         }
       }
-      .safeAreaPadding(.horizontal, isScenarioPresented ? 40 : nil)
+      .safeAreaPadding(.trailing, isScenarioPresented ? 672.0 : 0.0)
       .frame(
-        minWidth: isScenarioPresented ? scrollViewSize.width * 1.6 : nil,
         minHeight: scrollViewSize.height,
-        alignment: .topLeading
+        alignment: .top
       )
     }
     .onGeometryChange(for: CGSize.self) { proxy in
@@ -148,6 +141,7 @@ struct PropsListView: View {
     .padding(.horizontal, 28)
     .frame(minWidth: scrollViewSize.width - 80)
     .background(.white, in: RoundedRectangle(cornerRadius: 12))
+    .padding(.horizontal, 40)
   }
 
   private var headerCompleted: some View {
@@ -392,6 +386,7 @@ private struct PropsListRowView: View {
       prop.isCompleted ? .gray300 : .white,
       in: RoundedRectangle(cornerRadius: 12)
     )
+    .padding(.horizontal, 40)
   }
 
   private var propCompleted: some View {
