@@ -167,7 +167,7 @@ struct ChooseScenarioView: View {
     }
 
     /// 2. 추출된 텍스트에서 씬 분리
-    let separated = SeperateSceneService.shared.separteScenes(
+    let separated = SeperateSceneService.shared.seperateScenes(
       scenario: extracted
     )
 

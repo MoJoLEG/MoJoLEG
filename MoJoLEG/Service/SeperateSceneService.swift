@@ -12,8 +12,8 @@ final class SeperateSceneService {
 
   private init() {}
 
-  func separteScenes(scenario: String) -> [ScenarioScene]? {
-      let pattern = #"^(?:S#\d+(-\d+)?\.?|#\d+\.?|\d+\. |S#?(쿠키|COOKIE|인트로|프롤로그|에필로그)|프롤로그|에필로그|쿠키|COOKIE)"#
+  func seperateScenes(scenario: String) -> [ScenarioScene]? {
+      let pattern = #"^(?:S#?\d+(-\d+)?\.?|#\d+\.?|\d+\. |S#?(인트로|프롤로그|에필로그|쿠키|COOKIE|PROLOGUE)|인트로|프롤로그|에필로그|쿠키|COOKIE|PROLOGUE)"#
 
     do {
       let regex = try NSRegularExpression(pattern: pattern, options: [.anchorsMatchLines])
