@@ -91,7 +91,7 @@ struct SeperateSceneView: View {
                     Task {
                         guard let scenario else { return }
                         
-                        let seperatedScenes = SeperateSceneService.shared.separteScenes(
+                        let seperatedScenes = SeperateSceneService.shared.seperateScenes(
                             scenario: scenario
                         )
                         
